@@ -662,6 +662,22 @@ class RuleManagerDialog(QDialog):
                 errors.append("Replace 步骤的 from 不能为空。")
             if step.type == "regex_replace" and not str(step.parameters.get("pattern", "")):
                 errors.append("Regex Replace 步骤的 pattern 不能为空。")
+            if step.type == "number":
+                try:
+                    if int(str(step.parameters.get("step", "1"))) < 1:
+                        errors.append("Number 步骤的 step 必须 >= 1。")
+                except ValueError:
+                    errors.append("Number 步骤的 step 不是有效数字。")
+            if step.type == "insert":
+                try:
+                    if int(str(step.parameters.get("at_index", "0"))) < -1:
+                        errors.append("Insert 步骤的 at_index 必须 >= -1。")
+                except ValueError:
+                    errors.append("Insert 步骤的 at_index 不是有效数字。")
+            if step.type == "date":
+                fmt = str(step.parameters.get("format", ""))
+                if not fmt or "%" not in fmt:
+                    errors.append("Date 步骤的 format 必须包含有效的 strftime 格式（例如 %Y-%m-%d）。")
 
         return errors
 

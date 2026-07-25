@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+
 from PySide6.QtCore import QThread, Signal
 
 from engine.operation_logger import OperationLogger
@@ -34,6 +36,6 @@ class RenameWorker(QThread):
                 )
                 results.extend(batch_result)
                 self.progress_changed.emit(i + 1, total)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[RenameWorker] Error during rename: {e}", file=sys.stderr)
         self.finished_with_result.emit(results)

@@ -9,7 +9,7 @@ The project maintains a comprehensive automated test suite.
 
 | Metric | Value |
 |---|---|
-| Automated Tests | **188 PASS** |
+| Automated Tests | **192 PASS** |
 | Regression Matrix | **PASS** |
 | Unit + Integration | PASS |
 | Preview==Rename E2E | PASS |
@@ -41,22 +41,27 @@ PASS — Smoke tests cover: scan, preview, rename (batch), undo, rule persistenc
 
 ## Current Focus
 
-**M11.2 Stabilization**
+**M11.3 Baseline Stabilization — Complete**
 
-Current priorities:
+Completed:
 
-1. Documentation Alignment
-2. Validator Consolidation
-3. Golden-path E2E
-4. Prepare M12 Rule IDE
+1. Documentation Alignment ✅
+2. Validator Consolidation ✅
+3. Golden-path E2E ✅
+4. Repository Housekeeping ✅
+5. Baseline Code Review ✅ (M11.3 #1 + #2)
+6. Review Fixes (F1 + F2) ✅
+
+Next: M12 Rule IDE
 
 ## Recent Reviews
 
 | Review | Scope | Status | Risk | Issues |
 |---|---|---|---|---|
 | M11.3 #1 | `validator/`, `engine/` | Completed | LOW | 0 |
+| M11.3 #2 | `models/`, `scanner/`, `storage/`, `ui/`, `workers/`, `i18n/`, `config/`, `main.py` | Completed | MEDIUM | 2 |
 
-**Notes**: RenamePlanEngine reviewed. Validator reviewed. No implementation changes required.
+**Closed**: F1 (Swallowed Exceptions) — added stderr logging to workers. F2 (Rule Validation) — added step/at_index/format validation to `_validate()`. No Critical or High findings. No new Technical Debt.
 
 ---
 
