@@ -50,6 +50,62 @@ Current priorities:
 3. Golden-path E2E
 4. Prepare M12 Rule IDE
 
+## Recent Reviews
+
+| Review | Scope | Status | Risk | Issues |
+|---|---|---|---|---|
+| M11.3 #1 | `validator/`, `engine/` | Completed | LOW | 0 |
+
+**Notes**: RenamePlanEngine reviewed. Validator reviewed. No implementation changes required.
+
+---
+
+## Deferred Technical Debt
+
+- **TD-003 — RuleManagerDialog God Class (694 行)**
+  - Status: Deferred
+  - Evidence: Project Health Review (2026-07-24)
+  - Reason: 6 responsibilities in one class; no functional defect. Refactor when Rule IDE introduces new step types.
+  - Trigger: New RuleStep type requires UI changes, or M12 Rule IDE begins.
+
+- **TD-007 — MainWindow 接近 God Class (550 行)**
+  - Status: Deferred
+  - Evidence: Project Health Review (2026-07-24)
+  - Reason: 4+ responsibilities; currently maintainable. Split when adding new top-level features.
+  - Trigger: Adding a new major UI feature (e.g., preview panel, batch operation queue).
+
+- **TD-008 — Number Rule 硬编码分隔符**
+  - Status: Deferred
+  - Evidence: Project Health Review (2026-07-24)
+  - Reason: `_handle_number()` suffix mode uses hardcoded `_`; Date Rule already has configurable `separator`. Backward-compatible fix.
+  - Trigger: User requests customizable Number separator, or Rule parameter audit.
+
+- **TD-009 — 调试代码残留在生产文件**
+  - Status: Deferred
+  - Evidence: Project Health Review (2026-07-24)
+  - Reason: `_record_role()` / `dump_role_stats()` in `ui/file_table_model.py:126-131`. No UI trigger; production dead code.
+  - Trigger: Next file_table_model.py maintenance pass.
+
+- **TD-011 — FileItem 命名歧义**
+  - Status: Deferred
+  - Evidence: Project Health Review (2026-07-24)
+  - Reason: `FileItem` holds both files and directories. Onboarding confusion risk. Requires global rename.
+  - Trigger: Major version bump or architecture refresh.
+
+- **TD-013 — README.md 信息不足 (16 行)**
+  - Status: Deferred
+  - Evidence: Project Health Review (2026-07-24)
+  - Reason: Missing feature list, Rule type table, usage guide. Not blocking development.
+  - Trigger: Preparing for public release or GitHub promotion.
+
+- **TD-018 — Validation Rule Drift**
+  - Status: Deferred
+  - Evidence: M11.3 Review #1
+  - Reason: `Validator.validate()` reimplements checks inline rather than calling `check_legality()`. Current behavior is correct.
+  - Trigger: Validation rules change, Rule IDE introduces new validation, or M13 validation refactor begins.
+
+---
+
 ## Feature Freeze
 
 The following modules are frozen. Changes require explicit approval:
