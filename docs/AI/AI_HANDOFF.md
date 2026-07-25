@@ -7,31 +7,29 @@
 
 | Field | Value |
 |---|---|
-| Milestone | M11.1 |
-| Status | **COMPLETED** ✅ |
-| Tests | 176/176 PASS |
+| Milestone | M11.2 |
+| Status | **Stabilization** |
 | Architecture | Stable |
 | Feature Freeze | Enabled |
 | Blocker | None |
 
+> See `CURRENT_STATUS.md` for full test counts, frozen modules, and current priorities.
+
 ## Next Action
 
-**M12 Planning** — see `NEXT_MILESTONE.md`
+1. Documentation Alignment
+2. Validator Consolidation
+3. Golden-path E2E
+4. Prepare M12 Rule IDE
+
+> See `CURRENT_STATUS.md` § Current Focus for details.
 
 ## Key Files to Read
 
-1. `PROJECT_BRIEF.md` — what this project is
-2. `CURRENT_STATUS.md` — freeze state, test counts
+1. `CURRENT_STATUS.md` — milestone, test baseline, frozen modules, current focus
+2. `PROJECT_BRIEF.md` — what this project is
 3. `ARCHITECTURE.md` — pipeline, module boundaries
 4. `DEVELOPMENT_CONSTITUTION.md` — rules you must follow
 5. `AI_WORKFLOW.md` — how we work together
-6. `TEST_STRATEGY.md` — what tests are blocking
-7. `NEXT_MILESTONE.md` — what's next
-
-## Frozen Modules (Do Not Modify)
-
-- `engine/rule_engine.py`
-- `engine/rename_engine.py`
-- `engine/preview_engine.py`
-- `engine/rename_plan_engine.py`
-- `ui/file_table_model.py`
+6. `TEST_STRATEGY.md` — test layers and release gates
+7. `NEXT_MILESTONE.md` — long-term candidate features

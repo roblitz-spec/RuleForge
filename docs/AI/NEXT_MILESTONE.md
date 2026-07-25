@@ -1,8 +1,8 @@
 # ResourceHub — Next Milestone Planning
 
-## Current: M15 RC Complete
+## Current: M11.2 Stabilization
 
-## M16 Candidate Features
+## Candidate Features (M12+)
 
 | Priority | Feature | Rationale |
 |---|---|---|

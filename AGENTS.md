@@ -7,6 +7,8 @@
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
+| `M15-complete` | AddSuffix Rule 完成，AI Memory 系统建立 |
+| `M16-complete` | AI Memory v2.0 Governance，Selection Features |
 
 ## RuleStep 类型总览
 

@@ -4,7 +4,30 @@ from models.enums import ItemType
 from models.file_item import FileItem
 from models.validation_result import ValidationResult
 
-_FORBIDDEN_CHARS = set('< > : " / \\ | ? *'.split())
+_FORBIDDEN_CHARS = set(r'<>:"/\|?*')
+
+_WIN_RESERVED = {
+    "CON", "PRN", "AUX", "NUL",
+    *(f"COM{i}" for i in range(1, 10)),
+    *(f"LPT{i}" for i in range(1, 10)),
+}
+
+
+def check_legality(name: str) -> str:
+    """检查名称合法性，返回错误消息（空字符串表示合法）。"""
+    if not name or not name.strip():
+        return "名称不能为空"
+    if any(c in name for c in _FORBIDDEN_CHARS):
+        return "包含非法字符"
+    if name.rstrip() != name:
+        return "名称不能以空格结尾"
+    if name.rstrip(".") != name:
+        return "名称不能以 . 结尾"
+    if len(name) > 255:
+        return "名称过长"
+    if name.upper() in _WIN_RESERVED:
+        return f"「{name}」是系统保留名称"
+    return ""
 
 
 class Validator:

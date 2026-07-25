@@ -2,6 +2,21 @@
 
 > For architecture decisions behind these changes, see [`DECISION_LOG.md`](DECISION_LOG.md).
 
+## M11.2
+- **Sortable Table**: Column header click sorting, context menu (copy/paste)
+- **Pin Rules**: Rule pinning for quick access in rule list
+- **Regex Assistant**: Built-in regex templates (filename cleanup, content extraction, advanced)
+- **NAS Performance Fix**: Removed `Path.resolve()` from Scanner hot path, 511× SMB speedup
+- **Windows Case-Only Rename**: `samefile()` guard for case-only renames on NTFS
+- **Rescan After Rename**: Full filesystem rescan after rename execution (single source of truth)
+- **Knowledge Base**: `docs/knowledge/` with Windows case-only rename + refresh strategy docs
+- **Tests**: 188 PASS (+12 from M11.1 baseline)
+
+## M16
+- **AI Memory v2.0**: `AI_MEMORY_PACK.md` auto-generated from 12 source documents
+- **Selection Features**: Single-selection mode, selection UX (全选/取消全选), selection-aware rename
+- **Governance**: `README_AI.md` as AI memory governance hub
+
 ## M11.1
 - **Multiple Selection Support**: ExtendedSelection in QTableView, batch rename (file + directory + mixed)
 - **Scanner API**: `scan(paths: list[Path])` — multi-path input with deduplication

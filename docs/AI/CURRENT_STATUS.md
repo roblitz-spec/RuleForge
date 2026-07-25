@@ -1,13 +1,15 @@
 # ResourceHub — Current Status
 
-**Version**: M11.1
-**Date**: 2026-07-15
+**Version**: M11.2
+**Date**: 2026-07-24
 
 ## Test Status
 
+The project maintains a comprehensive automated test suite.
+
 | Metric | Value |
 |---|---|
-| Automated Tests | **176 PASS** |
+| Automated Tests | **188 PASS** |
 | Regression Matrix | **PASS** |
 | Unit + Integration | PASS |
 | Preview==Rename E2E | PASS |
@@ -36,6 +38,17 @@
 ## Manual QA
 
 PASS — Smoke tests cover: scan, preview, rename (batch), undo, rule persistence.
+
+## Current Focus
+
+**M11.2 Stabilization**
+
+Current priorities:
+
+1. Documentation Alignment
+2. Validator Consolidation
+3. Golden-path E2E
+4. Prepare M12 Rule IDE
 
 ## Feature Freeze
 
