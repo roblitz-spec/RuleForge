@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 from models.rule import Rule
 from models.rule_step import RuleStep
 from storage.repository import RuleRepository
+from editor.edit_session import EditSession
 from ui.regex_assistant import RegexAssistant
 
 _STEP_TYPES: list[tuple[str, str, str, str]] = [
@@ -69,6 +70,7 @@ class RuleManagerDialog(QDialog):
         super().__init__(parent)
         self._repo = repo
         self._current_rule: Rule | None = None
+        self._session: EditSession | None = None
         self._on_steps_changed = on_steps_changed
         self._regex_assistant: RegexAssistant | None = None
 
@@ -321,13 +323,18 @@ class RuleManagerDialog(QDialog):
     ) -> None:
         if current is None:
             self._current_rule = None
+            self._session = None
             self._name_edit.clear()
             self._desc_edit.clear()
             self._refresh_step_list()
             return
         rule_id = current.data(1)
-        self._current_rule = self._repo.find(rule_id)
-        if self._current_rule:
+        repo_rule = self._repo.find(rule_id)
+        if repo_rule:
+            self._session = EditSession()
+            self._session.open(repo_rule)
+            self._current_rule = self._session.rule
+            self._repo.update(self._current_rule)  # replace repo ref with WorkingCopy
             self._name_edit.setText(self._current_rule.name)
             self._desc_edit.setPlainText(self._current_rule.description)
             self._refresh_step_list()
@@ -603,37 +610,38 @@ class RuleManagerDialog(QDialog):
         step = self._current_step()
         if step is None:
             return
+        sid = step.id
         tp = step.type
         if tp == "replace":
-            step.parameters["from"] = self._replace_from.text()
-            step.parameters["to"] = self._replace_to.text()
+            self._session.update_param(sid, "from", self._replace_from.text())
+            self._session.update_param(sid, "to", self._replace_to.text())
         elif tp == "remove_text":
-            step.parameters["text"] = self._remove_text_edit.text()
+            self._session.update_param(sid, "text", self._remove_text_edit.text())
         elif tp == "add_prefix":
-            step.parameters["text"] = self._prefix_edit.text()
+            self._session.update_param(sid, "text", self._prefix_edit.text())
         elif tp == "regex_replace":
-            step.parameters["pattern"] = self._regex_pat.text()
-            step.parameters["replacement"] = self._regex_repl.text()
-            step.parameters["flags"] = self._regex_flags.text()
+            self._session.update_param(sid, "pattern", self._regex_pat.text())
+            self._session.update_param(sid, "replacement", self._regex_repl.text())
+            self._session.update_param(sid, "flags", self._regex_flags.text())
         elif tp == "case":
-            step.parameters["mode"] = self._case_mode.currentData()
+            self._session.update_param(sid, "mode", self._case_mode.currentData())
         elif tp == "trim":
-            step.parameters["mode"] = self._trim_mode.currentData()
+            self._session.update_param(sid, "mode", self._trim_mode.currentData())
         elif tp == "number":
-            step.parameters["start"] = str(self._num_start.value())
-            step.parameters["step"] = str(self._num_step.value())
-            step.parameters["padding"] = str(self._num_pad.value())
-            step.parameters["position"] = self._num_pos.currentData()
+            self._session.update_param(sid, "start", str(self._num_start.value()))
+            self._session.update_param(sid, "step", str(self._num_step.value()))
+            self._session.update_param(sid, "padding", str(self._num_pad.value()))
+            self._session.update_param(sid, "position", self._num_pos.currentData())
         elif tp == "insert":
-            step.parameters["text"] = self._ins_text.text()
-            step.parameters["at_index"] = str(self._ins_idx.value())
+            self._session.update_param(sid, "text", self._ins_text.text())
+            self._session.update_param(sid, "at_index", str(self._ins_idx.value()))
         elif tp == "date":
-            step.parameters["source"] = self._date_src.currentData()
-            step.parameters["format"] = self._date_fmt.text()
-            step.parameters["separator"] = self._date_sep.text()
-            step.parameters["position"] = self._date_pos.currentData()
+            self._session.update_param(sid, "source", self._date_src.currentData())
+            self._session.update_param(sid, "format", self._date_fmt.text())
+            self._session.update_param(sid, "separator", self._date_sep.text())
+            self._session.update_param(sid, "position", self._date_pos.currentData())
         elif tp == "add_suffix":
-            step.parameters["text"] = self._suffix_text.text()
+            self._session.update_param(sid, "text", self._suffix_text.text())
         self._notify_steps_changed()
         row = self._step_list.currentRow()
         self._refresh_step_list()
@@ -644,42 +652,25 @@ class RuleManagerDialog(QDialog):
     # ============================================================
 
     def _validate(self) -> list[str]:
-        errors: list[str] = []
+        """Delegate business validation to DomainValidator (WP-3).
+
+        UI retains presentation responsibility only — error display,
+        dialog formatting, and workflow control.
+        """
+        from dataclasses import replace as dc_replace
+        from editor.domain_validator import DomainValidator
+
         if self._current_rule is None:
-            return errors
+            return []
 
         name = self._name_edit.text().strip()
-        if not name:
-            errors.append("规则名称不能为空。")
+        rule = dc_replace(self._current_rule, name=name)
 
-        for r in self._repo.all_rules():
-            if r.id != self._current_rule.id and r.name == name:
-                errors.append(f"规则名称「{name}」已存在。")
-                break
-
-        for step in self._current_rule.steps:
-            if step.type == "replace" and not str(step.parameters.get("from", "")):
-                errors.append("Replace 步骤的 from 不能为空。")
-            if step.type == "regex_replace" and not str(step.parameters.get("pattern", "")):
-                errors.append("Regex Replace 步骤的 pattern 不能为空。")
-            if step.type == "number":
-                try:
-                    if int(str(step.parameters.get("step", "1"))) < 1:
-                        errors.append("Number 步骤的 step 必须 >= 1。")
-                except ValueError:
-                    errors.append("Number 步骤的 step 不是有效数字。")
-            if step.type == "insert":
-                try:
-                    if int(str(step.parameters.get("at_index", "0"))) < -1:
-                        errors.append("Insert 步骤的 at_index 必须 >= -1。")
-                except ValueError:
-                    errors.append("Insert 步骤的 at_index 不是有效数字。")
-            if step.type == "date":
-                fmt = str(step.parameters.get("format", ""))
-                if not fmt or "%" not in fmt:
-                    errors.append("Date 步骤的 format 必须包含有效的 strftime 格式（例如 %Y-%m-%d）。")
-
-        return errors
+        issues = DomainValidator.validate_rule(
+            rule,
+            existing_rules=self._repo.all_rules(),
+        )
+        return [i.message for i in issues]
 
     def _on_save(self) -> None:
         if self._current_rule is None:

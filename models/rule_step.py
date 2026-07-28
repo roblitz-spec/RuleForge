@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from uuid import uuid4
 
 
 @dataclass
@@ -9,3 +10,4 @@ class RuleStep:
 
     type: str
     parameters: dict[str, object] = field(default_factory=dict)
+    id: str = field(default_factory=lambda: str(uuid4()))
