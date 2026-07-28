@@ -334,7 +334,6 @@ class RuleManagerDialog(QDialog):
             self._session = EditSession()
             self._session.open(repo_rule)
             self._current_rule = self._session.rule
-            self._repo.update(self._current_rule)  # replace repo ref with WorkingCopy
             self._name_edit.setText(self._current_rule.name)
             self._desc_edit.setPlainText(self._current_rule.description)
             self._refresh_step_list()
@@ -432,6 +431,8 @@ class RuleManagerDialog(QDialog):
                 return s
         return None
 
+
+
     _PAGE_INDEX: dict[str, int] = {
         "replace": 1, "remove_text": 2, "add_prefix": 3,
         "regex_replace": 4, "case": 5, "trim": 6, "number": 7, "insert": 8, "date": 9, "add_suffix": 10,
@@ -523,6 +524,15 @@ class RuleManagerDialog(QDialog):
             self._suffix_text.blockSignals(False)
 
         self._param_stack.setCurrentIndex(page)
+
+
+    @property
+    def current_working_copy(self) -> Rule | None:
+        """The WorkingCopy being edited, for read-only consumers like Preview."""
+        if self._session is not None:
+            return self._session.rule
+        return None
+
 
     def _notify_steps_changed(self) -> None:
         if self._on_steps_changed is not None:
@@ -691,6 +701,10 @@ class RuleManagerDialog(QDialog):
 
         self._current_rule.name = self._name_edit.text().strip() or self._current_rule.name
         self._current_rule.description = self._desc_edit.toPlainText()
+
+        if self._session is not None:
+            self._session.commit()
+
         self._repo.save()
 
         rule_id = self._current_rule.id  # 在 refresh 之前保存 id

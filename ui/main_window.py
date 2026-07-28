@@ -64,6 +64,7 @@ class MainWindow(QMainWindow):
         self._settings = Settings()
         self._logger = OperationLogger()
         self._tr = Translator()
+        self._rule_dialog: "RuleManagerDialog | None" = None  # WP-9: preview isolation
 
         # 菜单栏
         self._setup_menu()
@@ -254,7 +255,13 @@ class MainWindow(QMainWindow):
         return self._repo.find(rule_id)
 
     def _refresh_preview(self) -> None:
-        rule = self._current_rule()
+        # WP-9: preview reads WorkingCopy when editing session is active
+        if self._rule_dialog is not None:
+            rule = self._rule_dialog.current_working_copy
+        else:
+            rule = None
+        if rule is None:
+            rule = self._current_rule()
         if rule is None or not self._items:
             return
         PreviewEngine.generate_preview(self._items, rule)
@@ -366,12 +373,12 @@ class MainWindow(QMainWindow):
         self._start_scan(self._current_dir)
 
     def _on_rule_manage(self) -> None:
-        dialog = RuleManagerDialog(
+        self._rule_dialog = RuleManagerDialog(
             self._repo,
             on_steps_changed=self._refresh_preview,
             parent=self,
         )
-        dialog.exec()
+        self._rule_dialog.exec()
         rule_id = self._rule_combo.currentData()
         self._rule_combo.blockSignals(True)
         self._rule_combo.clear()
@@ -384,6 +391,7 @@ class MainWindow(QMainWindow):
                     self._rule_combo.setCurrentIndex(i)
                     break
         self._rule_combo.blockSignals(False)
+        self._rule_dialog = None
         self._refresh_preview()
 
     def _on_rule_changed(self, _index: int) -> None:
