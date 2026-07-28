@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
 from models.rule import Rule
 from models.rule_step import RuleStep
 from storage.repository import RuleRepository
+from storage.session_store import SessionStore
 from editor.edit_session import EditSession
 from ui.regex_assistant import RegexAssistant
 
@@ -79,6 +80,12 @@ class RuleManagerDialog(QDialog):
         self._auto_save_timer.setInterval(30_000)
         self._auto_save_timer.timeout.connect(self._on_auto_save)
         self._auto_save_timer.start()
+
+        # WP-12 / Issue B: session persistence
+        from pathlib import Path
+        self._session_store = SessionStore(
+            Path.home() / ".resourcehub" / "sessions"
+        )
 
         self.setWindowTitle("规则管理")
         self.resize(900, 550)
@@ -307,6 +314,11 @@ class RuleManagerDialog(QDialog):
         else:
             return
 
+        # Issue A: if this rule IS the current session, sync via WorkingCopy
+        # so the change flows through commit() on next save.
+        if self._current_rule is not None and self._current_rule.id == rule.id:
+            self._current_rule.pinned = rule.pinned
+
         self._repo.save()
         self._refresh_rule_list()
         self._select_rule_in_list(rule.id)
@@ -332,6 +344,9 @@ class RuleManagerDialog(QDialog):
             self._rule_list.setCurrentItem(_prev)
             self._rule_list.blockSignals(False)
             return
+        # WP-12/Issue B: save session before switching away
+        if _prev is not None and self._session is not None:
+            self._save_session()
         if current is None:
             self._current_rule = None
             self._session = None
@@ -342,9 +357,15 @@ class RuleManagerDialog(QDialog):
         rule_id = current.data(1)
         repo_rule = self._repo.find(rule_id)
         if repo_rule:
-            self._session = EditSession()
-            self._session.open(repo_rule)
-            self._current_rule = self._session.rule
+            # WP-12/Issue B: try to restore persisted session first
+            restored = self._restore_session(rule_id)
+            if restored is not None:
+                self._session = restored
+                self._current_rule = self._session.rule
+            else:
+                self._session = EditSession()
+                self._session.open(repo_rule)
+                self._current_rule = self._session.rule
             self._name_edit.setText(self._current_rule.name)
             self._desc_edit.setPlainText(self._current_rule.description)
             self._refresh_step_list()
@@ -707,6 +728,8 @@ class RuleManagerDialog(QDialog):
     def closeEvent(self, event) -> None:
         """WP-11: intercept dialog close to warn on unsaved changes."""
         if self._maybe_discard_changes():
+            self._save_session()  # WP-12/Issue B: persist before close
+            self._auto_save_timer.stop()
             event.accept()
         else:
             event.ignore()
@@ -727,9 +750,28 @@ class RuleManagerDialog(QDialog):
         try:
             self._session.auto_commit()
             self._repo.save()
+            self._save_session()  # WP-12/Issue B: persist after auto-save
         except Exception:
             # Silently skip — WorkingCopy + dirty flag remain intact
             pass
+
+    # ── Session Persistence Helpers (WP-12 / Issue B) ─────────────
+
+    def _save_session(self) -> None:
+        """Persist current EditSession state via SessionStore."""
+        if self._session is None or self._current_rule is None:
+            return
+        self._session_store.save(
+            self._current_rule.id,
+            self._session.to_serializable(),
+        )
+
+    def _restore_session(self, rule_id: str) -> EditSession | None:
+        """Restore a previously persisted session, or None."""
+        data = self._session_store.load(rule_id)
+        if data is None:
+            return None
+        return EditSession.restore_from(data)
 
     def _validate(self) -> list[str]:
         """Delegate business validation to DomainValidator (WP-3).
@@ -776,6 +818,7 @@ class RuleManagerDialog(QDialog):
             self._session.commit()
 
         self._repo.save()
+        self._save_session()  # WP-12/Issue B: persist after manual save
 
         rule_id = self._current_rule.id  # 在 refresh 之前保存 id
         self._rule_list.blockSignals(True)
