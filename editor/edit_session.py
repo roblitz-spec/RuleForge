@@ -7,6 +7,7 @@ from enum import Enum, auto
 
 from models.rule import Rule
 from models.rule_step import RuleStep
+from models.session import SerializableSession
 
 
 class SessionState(Enum):
@@ -147,6 +148,54 @@ class EditSession:
         self._dirty = False
         self._history.clear()
         self._future.clear()
+
+    def auto_commit(self) -> bool:
+        """Commit WorkingCopy to the original Rule if dirty.
+
+        This is the Auto Save entry point — it invokes the same commit()
+        path as manual save, preserving the Commit Boundary.
+
+        Returns:
+            True if a commit occurred (was dirty), False otherwise.
+        """
+        if not self._dirty:
+            return False
+        self.commit()
+        return True
+
+    # ── Session Persistence (WP-12) ───────────────────────────────
+
+    def to_serializable(self) -> SerializableSession:
+        """Export session state for persistence (read-only).
+
+        WorkingCopy and dirty flag are captured.  Undo/redo history is
+        intentionally excluded — a restored session starts clean.
+        """
+        if self._working_copy is None:
+            raise RuntimeError("Cannot serialize — no active session")
+        return SerializableSession(
+            working_copy=self._working_copy,
+            is_dirty=self._dirty,
+        )
+
+    @classmethod
+    def restore_from(cls, data: SerializableSession) -> "EditSession":
+        """Create a new ACTIVE session from persisted state.
+
+        The restored WorkingCopy becomes the editing source of truth.
+        No undo/redo history — restored sessions start clean (WP-12 Option A).
+        The original Rule is NOT mutated (Commit boundary preserved).
+        """
+        session = cls()
+        # We need to set _original to a deep copy so commit() has a target
+        from copy import deepcopy
+        session._original = deepcopy(data.working_copy)
+        session._working_copy = deepcopy(data.working_copy)
+        session._dirty = data.is_dirty
+        session._history = []
+        session._future = []
+        session._state = SessionState.ACTIVE
+        return session
 
     # ── Undo / Redo (WP-8) ───────────────────────────────────────
 

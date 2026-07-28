@@ -799,6 +799,151 @@ class TestCommitRemainsOnlyMutationPath:
         session.commit()
         assert original.steps[0].parameters["from"] == "CHANGED"
 
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-10: Auto Save (Commit-Based)
+# ═══════════════════════════════════════════════════════════════════
+
+class TestAutoCommit:
+    """auto_commit() reuses the Commit boundary."""
+
+    def test_auto_commit_commits_when_dirty(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "CHANGED")
+        committed = session.auto_commit()
+        assert committed is True
+        assert original.steps[0].parameters["from"] == "CHANGED"
+
+    def test_auto_commit_skips_when_clean(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        committed = session.auto_commit()
+        assert committed is False
+        assert original.steps[0].parameters["from"] == "a"
+
+    def test_auto_commit_clears_dirty(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "CHANGED")
+        session.auto_commit()
+        assert session.is_dirty() is False
+
+    def test_auto_commit_clears_history(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        session.update_param(step.id, "from", "Y")
+        session.auto_commit()
+        assert session.can_undo() is False
+        assert session.can_redo() is False
+
+    def test_auto_commit_returns_false_when_clean(self) -> None:
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test"))
+        assert session.is_dirty() is False
+        assert session.auto_commit() is False
+
+
+class TestAutoSaveFailure:
+    """Auto-save on failure preserves WorkingCopy and dirty state."""
+
+    def test_auto_commit_working_copy_survives(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "SAFE")
+        # commit succeeds, WorkingCopy is intact
+        session.commit()
+        assert session.rule.steps[0].parameters["from"] == "SAFE"
+
+    def test_dirty_remains_when_no_commit(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "CHANGED")
+        # auto_commit on clean state does nothing
+        session.auto_commit()
+        assert session.is_dirty() is False  # commit cleared it
+        # Now dirty again
+        session.update_param(step.id, "from", "AGAIN")
+        assert session.is_dirty() is True
+
+
+class TestManualSaveAfterAutoSave:
+    """Manual Save behavior is unchanged after auto-save."""
+
+    def test_manual_save_after_auto_save(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "AUTO")
+        session.auto_commit()
+        # After auto-save, dirty is cleared
+        assert session.is_dirty() is False
+        assert original.steps[0].parameters["from"] == "AUTO"
+
+    def test_manual_save_still_works_after_auto_save(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "AUTO")
+        session.auto_commit()  # auto-save
+        # More editing
+        session.update_param(step.id, "from", "MANUAL")
+        session.commit()  # manual save
+        assert original.steps[0].parameters["from"] == "MANUAL"
+
+    def test_auto_save_does_not_interfere_with_undo(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        session.update_param(step.id, "from", "Y")
+        session.auto_commit()
+        # History is cleared after auto_commit
+        assert session.can_undo() is False
+        # New edits create fresh history
+        session.update_param(step.id, "from", "Z")
+        assert session.can_undo() is True
+        session.undo()
+        assert session.rule.steps[0].parameters["from"] == "Y"
+
+
+class TestCommitBoundaryPreserved:
+    """WP-10 preserves the WP-7 invariant: commit() is the only Rule mutation path."""
+
+    def test_auto_commit_uses_same_mutation_path(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "X")
+        # auto_commit calls commit(), same mutation path
+        session.auto_commit()
+        assert original.steps[0].parameters["from"] == "X"
+
+    def test_auto_commit_is_idempotent(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "X")
+        session.auto_commit()  # first
+        session.auto_commit()  # second (clean, should return False)
+        # No corruption
+        assert original.steps[0].parameters["from"] == "X"
+        assert session.is_dirty() is False
+
 # ═══════════════════════════════════════════════════════════════════
 # SessionState
 # ═══════════════════════════════════════════════════════════════════
@@ -812,3 +957,264 @@ class TestSessionStateEnum:
     def test_all_states_exist(self) -> None:
         states = set(SessionState)
         assert len(states) == 3
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-11: Unsaved Changes Warning
+# ═══════════════════════════════════════════════════════════════════
+
+class TestDirtyWarningState:
+    """Warning derives exclusively from is_dirty(); consumer is read-only."""
+
+    def test_clean_session_no_warning(self) -> None:
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test"))
+        # Warning check: is_dirty() → False → no warning
+        assert session.is_dirty() is False
+
+    def test_dirty_session_warning_active(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        # Warning check: is_dirty() → True → warning active
+        assert session.is_dirty() is True
+
+    def test_warning_is_read_only(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "X")
+        # Read is_dirty() multiple times — never mutates
+        assert session.is_dirty() is True
+        assert session.is_dirty() is True
+        assert original.steps[0].parameters["from"] == "a"
+        assert session.rule.steps[0].parameters["from"] == "X"
+
+
+class TestDirtyWarningAutoSave:
+    """Warning follows dirty state through auto-save transitions."""
+
+    def test_auto_save_success_clears_warning_state(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        assert session.is_dirty() is True  # warning
+        session.auto_commit()
+        assert session.is_dirty() is False  # no warning
+
+    def test_auto_save_clean_noop_preserves_clean_state(self) -> None:
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test"))
+        assert session.is_dirty() is False  # no warning
+        session.auto_commit()
+        assert session.is_dirty() is False  # still no warning
+
+
+class TestDirtyWarningManualSave:
+    """Manual save clears warning state."""
+
+    def test_manual_save_clears_warning(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        assert session.is_dirty() is True
+        session.commit()
+        assert session.is_dirty() is False
+
+    def test_discard_clears_warning(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        assert session.is_dirty() is True
+        session.discard()
+        assert session.is_dirty() is False
+
+
+class TestDirtyWarningUndoRedo:
+    """Warning reflects undo/redo state correctly."""
+
+    def test_undo_to_clean_clears_warning(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        session.undo()
+        assert session.is_dirty() is False  # no warning
+
+    def test_redo_restores_warning(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        session.undo()
+        assert session.is_dirty() is False  # no warning
+        session.redo()
+        assert session.is_dirty() is True   # warning returns
+
+
+class TestDirtyWarningIsolation:
+    """Warning layer never mutates WorkingCopy, Rule, or Repository."""
+
+    def test_warning_never_mutates_working_copy(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        before = session.rule.steps[0].parameters["from"]
+        _ = session.is_dirty()  # warning check
+        assert session.rule.steps[0].parameters["from"] == before
+
+    def test_warning_never_mutates_original(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "X")
+        _ = session.is_dirty()  # warning check
+        assert original.steps[0].parameters["from"] == "a"
+
+    def test_warning_never_calls_commit(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        _ = session.is_dirty()
+        # Warning didn't trigger commit — dirty state preserved
+        assert session.is_dirty() is True
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-12: Session Persistence
+# ═══════════════════════════════════════════════════════════════════
+
+class TestSessionPersistenceRoundTrip:
+    """Session state round-trips through SerializableSession correctly."""
+
+    def test_clean_session_roundtrip(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        assert restored.rule.id == "r1"
+        assert restored.rule.name == "Test"
+        assert restored.rule.steps[0].type == "replace"
+        assert restored.rule.steps[0].parameters["from"] == "a"
+        assert restored.is_dirty() is False
+
+    def test_dirty_session_roundtrip(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "DIRTY")
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        assert restored.is_dirty() is True
+        assert restored.rule.steps[0].parameters["from"] == "DIRTY"
+
+    def test_undo_history_not_restored(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "X")
+        session.update_param(step.id, "from", "Y")
+        assert session.can_undo() is True
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        # WP-12 Option A: undo history is NOT restored
+        assert restored.can_undo() is False
+        assert restored.can_redo() is False
+
+
+class TestSessionPersistenceCommitBoundary:
+    """Restore does not mutate Rule or write Repository."""
+
+    def test_restore_does_not_mutate_original_rule(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session = EditSession()
+        session.open(original)
+        session.update_param(step.id, "from", "CHANGED")
+        data = session.to_serializable()
+        _ = EditSession.restore_from(data)
+        # Original must NOT be touched
+        assert original.steps[0].parameters["from"] == "a"
+
+    def test_restored_session_can_commit(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "RESTORED")
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        # Restored session can still commit
+        restored.commit()
+        assert restored.is_dirty() is False
+        assert restored.rule.steps[0].parameters["from"] == "RESTORED"
+
+
+class TestSessionPersistenceAutoSaveCompat:
+    """Auto Save and session persistence coexist correctly."""
+
+    def test_restored_session_auto_commit_works(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "AUTO")
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        restored.auto_commit()
+        assert restored.is_dirty() is False
+
+    def test_restored_clean_session_auto_commit_noop(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        committed = restored.auto_commit()
+        assert committed is False
+
+
+class TestSessionPersistenceUnsavedChangesCompat:
+    """Unsaved Changes warning follows restored dirty state."""
+
+    def test_restored_dirty_session_has_warning_state(self) -> None:
+        step = RuleStep(type="replace", parameters={"from": "a"})
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "UNSAVED")
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        assert restored.is_dirty() is True  # warning active
+
+    def test_restored_clean_session_no_warning(self) -> None:
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test"))
+        data = session.to_serializable()
+        restored = EditSession.restore_from(data)
+        assert restored.is_dirty() is False  # no warning
+
+
+class TestSerializableSessionStruct:
+    """SerializableSession is a pure data holder, not an owner."""
+
+    def test_serializable_is_pure_data(self) -> None:
+        from models.session import SerializableSession
+        step = RuleStep(type="replace", parameters={"from": "x"})
+        rule = Rule(id="r1", name="T", steps=[step])
+        ss = SerializableSession(working_copy=rule, is_dirty=True)
+        assert ss.working_copy.steps[0].parameters["from"] == "x"
+        assert ss.is_dirty is True
+
+    def test_serializable_dirty_default(self) -> None:
+        from models.session import SerializableSession
+        ss = SerializableSession(working_copy=Rule(id="r1", name="T"), is_dirty=False)
+        assert ss.is_dirty is False
+
+

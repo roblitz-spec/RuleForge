@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from PySide6.QtCore import Qt as QtCore
+from PySide6.QtCore import Qt as QtCore, QTimer
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -73,6 +73,12 @@ class RuleManagerDialog(QDialog):
         self._session: EditSession | None = None
         self._on_steps_changed = on_steps_changed
         self._regex_assistant: RegexAssistant | None = None
+
+        # WP-10: auto-save timer (30 s default)
+        self._auto_save_timer = QTimer(self)
+        self._auto_save_timer.setInterval(30_000)
+        self._auto_save_timer.timeout.connect(self._on_auto_save)
+        self._auto_save_timer.start()
 
         self.setWindowTitle("规则管理")
         self.resize(900, 550)
@@ -321,6 +327,11 @@ class RuleManagerDialog(QDialog):
     def _on_rule_selected(
         self, current: QListWidgetItem | None, _prev: QListWidgetItem | None,
     ) -> None:
+        if _prev is not None and not self._maybe_discard_changes():
+            self._rule_list.blockSignals(True)
+            self._rule_list.setCurrentItem(_prev)
+            self._rule_list.blockSignals(False)
+            return
         if current is None:
             self._current_rule = None
             self._session = None
@@ -347,6 +358,8 @@ class RuleManagerDialog(QDialog):
 
     def _on_delete_rule(self) -> None:
         if self._current_rule is None:
+            return
+        if not self._maybe_discard_changes():
             return
 
         # 记录删除前的位置，删除后选择相邻规则
@@ -660,6 +673,63 @@ class RuleManagerDialog(QDialog):
     # ============================================================
     #  保存 & 校验
     # ============================================================
+
+    def _maybe_discard_changes(self) -> bool:
+        """WP-11: warn if dirty, with Save / Discard / Cancel options.
+
+        Returns:
+            True if the caller may proceed (changes saved or discarded).
+            False if the caller should cancel the navigation.
+        """
+        if self._session is None or not self._session.is_dirty():
+            return True  # clean → proceed
+        buttons = (
+            QMessageBox.Save
+            | QMessageBox.Discard
+            | QMessageBox.Cancel
+        )
+        choice = QMessageBox.warning(
+            self,
+            "未保存的更改",
+            "当前规则有未保存的更改。是否保存？",
+            buttons,
+            QMessageBox.Cancel,
+        )
+        if choice == QMessageBox.Cancel:
+            return False
+        if choice == QMessageBox.Save:
+            self._on_save()
+        elif choice == QMessageBox.Discard:
+            if self._session is not None:
+                self._session.discard()
+        return True
+
+    def closeEvent(self, event) -> None:
+        """WP-11: intercept dialog close to warn on unsaved changes."""
+        if self._maybe_discard_changes():
+            event.accept()
+        else:
+            event.ignore()
+
+    def _on_auto_save(self) -> None:
+        """WP-10: timer-based auto-save via the Commit boundary.
+
+        Skips validation — auto-save is crash safety, not correctness enforcement.
+        On failure, dirty state is preserved and WorkingCopy is intact.
+        """
+        if self._session is None or self._current_rule is None:
+            return
+        if not self._session.is_dirty():
+            return
+        # Sync accumulated name / description edits to WorkingCopy
+        self._current_rule.name = self._name_edit.text().strip() or self._current_rule.name
+        self._current_rule.description = self._desc_edit.toPlainText()
+        try:
+            self._session.auto_commit()
+            self._repo.save()
+        except Exception:
+            # Silently skip — WorkingCopy + dirty flag remain intact
+            pass
 
     def _validate(self) -> list[str]:
         """Delegate business validation to DomainValidator (WP-3).
