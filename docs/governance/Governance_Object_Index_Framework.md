@@ -12,6 +12,48 @@ It does **not** perform repository migration, implement automation, or modify ex
 
 ---
 
+## Core Concepts
+
+### Object Identity vs. Version Identity
+
+A governance object has two distinct identities that serve different purposes:
+
+| Identity | Meaning | Stability | Example |
+|---|---|---|---|
+| **Object Identity** | What the document *is* — its role in the governance system | Immutable for the object's lifetime | `GOV-CHARTER-001` (the Project Charter) |
+| **Version Identity** | What *revision* of the document this is — its state at a point in time | Changes with each accepted update | `1.0` (initial baseline), `1.1` (amended) |
+
+**Why this distinction matters:**
+
+1. **Cross-references survive version changes.** A document referencing `GOV-CHARTER-001` does not break when the Charter is amended from v1.0 to v1.1. The reference is to the object, not the version.
+
+2. **Traceability chains are stable.** The dependency chain `Resolution → Charter → Baseline → Registry → Roadmap` uses object identities. Version increments within any node do not require updating downstream references.
+
+3. **History is navigable.** A superseded Charter v1.0 retains `GOV-CHARTER-001` as its object identity while its version marks it as `superseded`. The relationship `GOV-CHARTER-001 v1.1 updates GOV-CHARTER-001 v1.0` is explicit and queryable.
+
+4. **Automation is predictable.** Scripts resolve `GOV-CHARTER-001` to "the current accepted version" without parsing filenames or guessing. The registry maps object identity to current version.
+
+**Counter-example (current state):** Documents reference each other by filename (`Project_Charter_v1.0.md`). If the Charter is renamed to `Project_Charter_v1.1.md`, every reference breaks. Object identity solves this.
+
+### Identity Lifecycle
+
+```
+Object Created        Version 1.0 Accepted     Version 1.1 Accepted
+    │                       │                       │
+    ▼                       ▼                       ▼
+GOV-CHARTER-001 ────── GOV-CHARTER-001 ────── GOV-CHARTER-001
+    v0.1                  v1.0                   v1.1
+  (draft)              (accepted)             (accepted)
+                         ▲                       ▲
+                         │                       │
+                    Object identity             Same object,
+                    is now stable              version evolved
+```
+
+The object identity is assigned at creation and never changes. The version identity evolves through the lifecycle stages defined in §3.3.
+
+---
+
 ## 1. Governance Object Taxonomy
 
 ### 1.1 Taxonomy Design Principle
@@ -36,19 +78,20 @@ Every governance object is assigned exactly one **Object Type**. The type determ
 
 **11 formal types** replace the 14 ad-hoc inferred types from the assessment. The consolidation:
 
-| Assessment Type | Framework Type |
-|---|---|
-| Constitution / Policy → | `CONST` |
-| Charter / Identity → | `CHARTER` |
-| Architecture → | `ARCH` |
-| Status / Handoff → | `STATUS` |
-| Decision Records → | `DEC` |
-| Governance Rules → | `GOV` |
-| Planning / Roadmap → | `PLAN` |
-| History / Changelog → | `REC` |
-| Reviews / Audits + Review Work Product → | `REV` |
-| Reference → | `REF` |
-| Build Guide + Integration Report → | `GUIDE` |
+| Assessment Type | Framework Type | Rationale |
+|---|---|---|
+| Constitution / Policy → | `CONST` | Both define binding rules; distinction (constitution vs policy) is content, not structural |
+| Charter / Identity → | `CHARTER` | Identity documents are a subset of charter scope; single type avoids ambiguity |
+| Architecture → | `ARCH` | Distinct structural role — no merge |
+| Status / Handoff → | `STATUS` | Both serve state communication; handoff is a specialized status document |
+| Decision Records → | `DEC` | Distinct evidential role — no merge |
+| Governance Rules → | `GOV` | Distinct rule-making role — no merge |
+| Planning / Roadmap → | `PLAN` | Roadmap is a planning sub-type; single type for all forward-looking documents |
+| History / Changelog → | `REC` | Both are immutable historical records; changelog is a specialized record |
+| Reviews / Audits + Review Work Product → | `REV` | Assessments, reviews, audits all serve the verification function; sub-types are content distinction |
+| Retrospectives / Reports → | `REV` | Retrospectives are a specialized form of review; same lifecycle |
+| Reference → | `REF` | Distinct supplementary role — no merge |
+| Build Guide + Integration Report → | `GUIDE` | Both are procedural instructions; integration report is a transitional artifact that becomes a guide |
 
 ### 1.3 Type Assignment Rules
 
@@ -65,9 +108,33 @@ Every governance object is assigned exactly one **Object Type**. The type determ
 
 ### 2.1 Identifier Design Principle
 
-Every governance object has a **single, stable, globally unique identifier**. The identifier is independent of filename, location, and version.
+Every governance object has a **single, stable, globally unique identifier**. The identifier is independent of filename, location, and version — it is the object's identity for the lifetime of the object.
 
-### 2.2 Identifier Format
+### 2.2 Identifier Semantics
+
+The identifier encodes three properties, each serving a specific governance function:
+
+| Component | Property Encoded | Governance Function |
+|---|---|---|
+| `GOV` | Namespace | Distinguishes governance objects from code symbols, ADR references, and PAC discovery docs |
+| `{TYPE}` | Structural role | Enables type-based queries ("all decisions," "all status docs"), type-specific automation, and type-appropriate lifecycle enforcement |
+| `{NNN}` | Chronology | Encodes creation order within type; enables "what was decided first?" queries without timestamp parsing |
+
+**Why these three properties:**
+
+1. **Namespace isolation** (`GOV`): ADRs (`ADR-001`), decisions (`D-01`), gaps (`G-01`), and proposals (`PG-01`) are content identifiers within documents. The `GOV` prefix prevents collision with these existing namespaces and with future code-level symbols.
+
+2. **Type encoding** (`CHARTER`, `DEC`, etc.): Putting the type in the identifier makes it self-describing. `GOV-CHARTER-001` communicates its role without requiring a registry lookup. This is critical for human readability in cross-references — a reader encountering `GOV-CHARTER-001` in a `source` field immediately knows it references a charter document.
+
+3. **Sequential numbering** (`001`, `002`): Sequential (not random, not hash-based) because governance documents are created by humans in a defined order. The number conveys "this is the first charter" vs "this is the second decision." No semantic meaning is attached to the number beyond creation order.
+
+**What the identifier does NOT encode:**
+- Version (belongs in the `version` metadata field)
+- Status (belongs in the `status` metadata field)
+- Location or filename (irrelevant to identity; an object may be renamed or moved)
+- Content hash (too brittle for documents that undergo editorial revision)
+
+### 2.3 Identifier Format
 
 ```
 GOV-{TYPE}-{NNN}
@@ -81,7 +148,7 @@ GOV-{TYPE}-{NNN}
 
 **Examples**: `GOV-CHARTER-001`, `GOV-DEC-002`, `GOV-STATUS-001`
 
-### 2.3 Identifier Assignment
+### 2.4 Identifier Assignment
 
 | Rule | Description |
 |---|---|
@@ -91,7 +158,7 @@ GOV-{TYPE}-{NNN}
 | I4 | Deprecated or superseded documents retain their identifier |
 | I5 | The identifier is declared in the document's metadata header |
 
-### 2.4 Existing Identifier Namespaces
+### 2.5 Existing Identifier Namespaces
 
 Existing ID namespaces (ADR, D, UD, G, PG) remain for backward compatibility:
 
@@ -110,9 +177,33 @@ These are **content identifiers** (within documents), not document identifiers. 
 
 ### 3.1 Metadata Design Principle
 
-Every governance object carries a standard metadata header. Required fields ensure minimum discoverability. Optional fields support specific object types.
+Every governance object carries a standard metadata header. Required fields ensure minimum discoverability and traceability. Optional fields support specific object types without burdening simple documents.
 
-### 3.2 Metadata Schema
+### 3.2 Field Selection Rationale
+
+**Why these 6 fields are required:**
+
+| Field | Justification |
+|---|---|
+| `id` | Object identity (§Core Concepts). Without an ID, cross-references cannot be stable. This is the single most important metadata field — it enables all other governance capabilities. |
+| `title` | Human readability. The ID is machine-friendly; the title is human-friendly. Both are needed. |
+| `type` | Determines lifecycle rules, expected content, and automation behavior. A `CONST` document cannot be `deprecated` in the same way a `STATUS` document can. |
+| `status` | Answers "can I rely on this document right now?" without reading it. A document without a status field requires full-text inspection to determine if it's current. |
+| `version` | Enables "is this the latest?" queries. Required for version-aware cross-references and stale detection. Integrates with PG-01 versioning framework. |
+| `date` | Temporal ordering independent of version. Two `v1.0-draft` versions of the same document are ordered by date. Required for automation that answers "what changed since last week?" |
+
+**Why these 6 fields are optional:**
+
+| Field | Justification |
+|---|---|
+| `source` | Only meaningful for documents in a dependency chain. A `CONST` document has no primary source — it is foundational. A `CHARTER` document does. |
+| `phase` | Only meaningful for work-in-progress documents (`PLAN`, `REV`). An accepted `REC` has no phase. |
+| `milestone` | Only meaningful for milestone-bound documents (`STATUS`, `REC`). A `CONST` or `REF` transcends milestones. |
+| `branch` | Only meaningful for actively developed documents. An accepted `REC` has no active branch. |
+| `predecessor` | Only meaningful when a document supersedes another. First versions have no predecessor. |
+| `audience` | Only meaningful when the document targets a specific reader. Most governance documents are universal within the project. |
+
+### 3.3 Metadata Schema
 
 #### Required Fields (All Objects)
 
@@ -136,7 +227,7 @@ Every governance object carries a standard metadata header. Required fields ensu
 | **Predecessor** | `predecessor` | GOV-ID or commit hash | `PLAN`, `CHARTER` |
 | **Audience** | `audience` | Free text | `REF`, `CONST` |
 
-### 3.3 Lifecycle Stages
+### 3.4 Lifecycle Stages
 
 | Stage | Meaning | Applicable Types |
 |---|---|---|
@@ -147,7 +238,7 @@ Every governance object carries a standard metadata header. Required fields ensu
 | `deprecated` | No longer maintained; will be removed | All |
 | `archived` | Historical record; immutable | `REC` |
 
-### 3.4 Metadata Header Format
+### 3.5 Metadata Header Format
 
 ```markdown
 # {Title}
@@ -163,7 +254,7 @@ Every governance object carries a standard metadata header. Required fields ensu
 
 Single canonical format. Replaces the 3+ date formats and 2+ status formats identified in the assessment.
 
-### 3.5 Metadata Coverage Target
+### 3.6 Metadata Coverage Target
 
 | Field | Current Coverage | Target (Post-Implementation) |
 |---|---|---|
@@ -182,19 +273,59 @@ Single canonical format. Replaces the 3+ date formats and 2+ status formats iden
 
 ### 4.1 Relationship Design Principle
 
-Every governance object declares its relationships explicitly in metadata. No relationship is inferred from directory location, filename similarity, or content grep.
+Every governance object declares its relationships explicitly in metadata. No relationship is inferred from directory location, filename similarity, or content grep. Explicit relationships are the foundation for traceability and stale detection.
 
-### 4.2 Relationship Types
+### 4.2 Relationship Semantics
 
-| Type | Direction | Meaning | Example |
+Each relationship type serves a specific governance function in the traceability chain:
+
+| Type | Direction | Governance Function | Traceability Role |
 |---|---|---|---|
-| `primary_source` | Upstream | This object's authority derives from the target | Charter → Resolution |
-| `references` | Downstream | This object cites the target for context or evidence | Charter → PAC-1 discovery doc |
-| `updates` | Bidirectional | This object replaces or supersedes the target | Charter v1.1 → Charter v1.0 |
-| `depends_on` | Upstream | This object's content is invalid if the target changes | AI_HANDOFF → CURRENT_STATUS |
-| `part_of` | Upstream | This object belongs to a larger work package | PG02_Assessment → PG-02 work package |
+| `primary_source` | Upstream | Declares authority derivation | **Vertical traceability**: "Who decided this?" — traces upward to the source of authority |
+| `references` | Downstream | Cites evidence or context | **Horizontal traceability**: "What informed this?" — traces outward to supporting evidence |
+| `updates` | Bidirectional | Replaces or supersedes a prior version | **Version traceability**: "What did this replace?" — traces backward through version history |
+| `depends_on` | Upstream | Declares content validity dependency | **Staleness traceability**: "What must I check when this changes?" — enables mechanical stale detection without content inspection |
+| `part_of` | Upstream | Declares membership in a larger work package | **Structural traceability**: "What work package produced this?" — groups related artifacts |
 
-### 4.3 Relationship Declaration
+### 4.3 Composite Traceability Chains
+
+Individual relationships combine to form end-to-end traceability:
+
+**Authority chain** (`primary_source`):
+```
+GOV-PLAN-003 (Roadmap)
+    → GOV-DEC-002 (Registry)       [primary_source]
+        → GOV-GOV-001 (Baseline)    [primary_source]
+            → GOV-CHARTER-001       [primary_source]
+                → GOV-GOV-002       [primary_source] — "The Resolution decided this"
+```
+Answers: "What is the authority basis for this roadmap item?" — traversable in O(n) from any node.
+
+**Evidence chain** (`references` + `primary_source`):
+```
+GOV-CHARTER-001
+    → GOV-GOV-002                   [primary_source]
+    → docs/PAC/14_Alignment_Review.md [references]  — "This file informed the charter"
+    → docs/PAC/01_Project_Identity.md [references]   — "This file informed the charter"
+```
+Answers: "What evidence supports this document?" — combines authority and evidence in a single query.
+
+**Version chain** (`updates`):
+```
+GOV-CHARTER-001 v1.1
+    → GOV-CHARTER-001 v1.0          [updates] — "v1.1 replaced v1.0"
+```
+Answers: "What is the full version history of this object?"
+
+**Staleness chain** (`depends_on`):
+```
+GOV-STATUS-002 (AI_HANDOFF)
+    → GOV-STATUS-001 (CURRENT_STATUS)  [depends_on]
+    → GOV-ARCH-001 (ARCHITECTURE)       [depends_on]
+```
+Answers: "If CURRENT_STATUS changes, what else must be reviewed?" — the foundation for automated staleness detection.
+
+### 4.4 Relationship Declaration
 
 ```markdown
 | primary_source | references | depends_on |
@@ -204,7 +335,7 @@ Every governance object declares its relationships explicitly in metadata. No re
 
 Relationships are declared in the metadata header as GOV-ID references. External references (PAC docs, code files) use repository paths.
 
-### 4.4 Dependency Graph
+### 4.5 Dependency Graph
 
 The framework enables automated dependency graph generation:
 
@@ -233,7 +364,7 @@ GOV-CONST-002 (AI_WORKFLOW)
 ...
 ```
 
-### 4.5 Stale Propagation
+### 4.6 Stale Propagation
 
 With explicit `depends_on` relationships, staleness detection becomes mechanical:
 
@@ -250,7 +381,18 @@ This replaces the current manual grep-based staleness detection (F7 from assessm
 
 ## 5. Integration with PG-01 Governance Versioning Framework
 
-### 5.1 Version Field
+### 5.1 Object Identity → Version Identity Mapping
+
+The two-identity model (§Core Concepts) integrates with PG-01 as follows:
+
+| Identity Layer | This Framework | PG-01 Framework |
+|---|---|---|
+| Object Identity | `GOV-{TYPE}-{NNN}` (immutable) | Not versioned — stable across all versions |
+| Version Identity | `version` field in metadata | Semantic versioning rules, increment triggers |
+
+The PG-01 versioning framework governs the `version` field. The Governance Object Index governs the `id` field. They are orthogonal and complementary.
+
+### 5.2 Version Field
 
 The `version` field in the metadata schema (§3.2) uses the semantic versioning scheme defined by PG-01 (Governance Versioning Framework, in development):
 
@@ -261,7 +403,7 @@ The `version` field in the metadata schema (§3.2) uses the semantic versioning 
 | `1.x` | Amendment — backward-compatible update |
 | `2.0` | Major revision — breaking change to governance structure |
 
-### 5.2 Version ↔ Lifecycle Mapping
+### 5.3 Version ↔ Lifecycle Mapping
 
 | Lifecycle Stage | Typical Version |
 |---|---|
@@ -272,7 +414,7 @@ The `version` field in the metadata schema (§3.2) uses the semantic versioning 
 | `deprecated` | Frozen at last version |
 | `archived` | Frozen at last version |
 
-### 5.3 Version Increment Triggers
+### 5.4 Version Increment Triggers
 
 | Change | Version Increment |
 |---|---|
@@ -283,7 +425,7 @@ The `version` field in the metadata schema (§3.2) uses the semantic versioning 
 | Type change | Major (`1.0` → `2.0`) |
 | Status change only | No version change |
 
-### 5.4 Index Versioning
+### 5.5 Index Versioning
 
 The Governance Object Index itself is a governance object:
 
@@ -370,13 +512,15 @@ The Governance Object Index itself is a governance object:
 
 | # | Decision | Rationale |
 |---|---|---|
-| D1 | 11 formal types | Balances granularity (14 was too many) with clarity (8 would be too few). Consolidates similar types. |
-| D2 | `GOV-{TYPE}-{NNN}` identifier format | 4-char type codes balance human readability with grep-friendliness. Sequential numbering is simple and collision-free. |
-| D3 | Metadata as Markdown table | Consistent with existing doc conventions; human-readable; machine-parseable (pipe-delimited). |
-| D4 | 6 required + 6 optional fields | Minimum required set ensures discoverability; optional fields prevent over-specification for simple documents. |
-| D5 | Existing ID namespaces preserved | ADR, D, G, PG namespaces are content-level, not document-level. No migration needed. |
-| D6 | `depends_on` for stale detection | Explicit dependency declaration is the only reliable way to detect stale propagation. |
-| D7 | Framework itself is `GOV-REF-003` | The index framework is a reference document; it must carry its own metadata. |
+| D1 | 11 formal types | Balances granularity with clarity. 14 was too many (COSNT vs POLICY distinction added no structural value). 8 would be too few (DEC, GOV, PLAN have fundamentally different lifecycles and merge would lose that). Each consolidation decision is justified in §1.2. |
+| D2 | `GOV-{TYPE}-{NNN}` identifier format | Three encoded properties (namespace, role, chronology) each serve a distinct governance function. No property is redundant. See §2.2. |
+| D3 | Metadata as Markdown table | Consistent with existing doc conventions (AI_HANDOFF, AI_MEMORY_PACK already use tables). Human-readable. Machine-parseable (pipe-delimited). No new format to learn. |
+| D4 | 6 required + 6 optional fields | Required set is the minimum for discoverability and traceability. Optional fields prevent over-specification — a `CONST` document should not carry a `milestone` field. See §3.2. |
+| D5 | Existing ID namespaces preserved | ADR, D, G, PG namespaces are content-level identifiers within documents, not document-level identifiers. No migration needed. No collision risk. |
+| D6 | `depends_on` for stale detection | Explicit dependency declaration is the only reliable way to detect stale propagation. Grep-based detection (current state) misses cross-document dependencies. |
+| D7 | Framework itself is `GOV-REF-003` | The index framework is a governance object; it must carry its own metadata to demonstrate the model it defines. |
+| D8 | Object Identity ≠ Version Identity | Core design decision. Object identity (`GOV-CHARTER-001`) is stable across versions. Version identity (`1.0` → `1.1`) changes. This separation is what enables stable cross-references, version history navigation, and automation. Without it, every version increment breaks every reference — the current state problem the framework exists to solve. |
+| D9 | Explicit relationships over inferred relationships | Every relationship is declared. Directory location, filename pattern, and content grep are not relationships. This is the single constraint that makes automation possible — a script can parse declared relationships; it cannot interpret human naming conventions. |
 
 ---
 
@@ -396,13 +540,14 @@ The Governance Object Index itself is a governance object:
 
 | Criterion | Status |
 |---|---|
-| Object taxonomy defined (≥8, ≤12 types) | ✅ 11 types |
-| Identifier format specified | ✅ `GOV-{TYPE}-{NNN}` |
-| Metadata schema defined (required + optional) | ✅ 6 required + 6 optional |
-| Relationship model defined (≥3 types) | ✅ 5 types |
-| Versioning integration defined | ✅ Schema + lifecycle mapping |
+| Object taxonomy defined (≥8, ≤12 types) | ✅ 11 types with consolidation rationale |
+| Identifier format specified with semantics | ✅ `GOV-{TYPE}-{NNN}` with per-component rationale |
+| Object Identity vs Version Identity distinction defined | ✅ Core Concepts §2 |
+| Metadata schema defined (required + optional) with field rationale | ✅ 6+6 fields with per-field justification |
+| Relationship model defined (≥5 types) with traceability semantics | ✅ 5 types with composite chain documentation |
+| Versioning integration defined | ✅ Object↔Version mapping + lifecycle integration |
 | Provisional assignment table complete | ✅ 34 objects assigned |
-| Design decisions documented | ✅ 7 decisions |
+| Design decisions documented with rationale | ✅ 9 decisions |
 | No existing documents modified | ✅ |
 
 ---
