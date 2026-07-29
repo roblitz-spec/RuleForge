@@ -312,9 +312,18 @@ class RuleManagerDialog(QDialog):
             unpin_action = menu.addAction("取消置顶")
         else:
             pin_action = menu.addAction("置顶")
+        menu.addSeparator()
+        dup_action = menu.addAction("复制规则")
 
         action = menu.exec(self._rule_list.viewport().mapToGlobal(pos))
         if action is None:
+            return
+
+        if action.text() == "复制规则":
+            dup = self._repo.duplicate(rule)
+            self._repo.save()
+            self._refresh_rule_list()
+            self._select_rule_in_list(dup.id)
             return
 
         if rule.pinned and action.text() == "取消置顶":
