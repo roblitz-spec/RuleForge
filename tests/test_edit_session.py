@@ -4,11 +4,15 @@ from __future__ import annotations
 import json
 import tempfile
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 
 import pytest
 
 from editor.edit_session import EditSession, SessionState
+from engine.preview_engine import PreviewEngine
+from models.enums import ItemType
+from models.file_item import FileItem
 from models.rule import Rule
 from models.rule_step import RuleStep
 from storage.session_store import SessionStore
@@ -1359,3 +1363,172 @@ class TestSessionStoreLifecycle:
 
 
 
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-15: Auto-Refresh Pipeline
+# ═══════════════════════════════════════════════════════════════════
+
+class TestAutoRefreshPipeline:
+    """End-to-end tests for the auto-refresh pipeline.
+
+    Auto-refresh flow:
+      EditSession.rule (WorkingCopy) → PreviewEngine.generate_preview()
+    """
+
+    def test_working_copy_changes_reflected_in_preview(self) -> None:
+        """When WorkingCopy is edited, preview uses updated content."""
+        session = EditSession()
+        step = RuleStep(type="replace", parameters={"from": "_", "to": " "})
+        session.open(Rule(id="r1", name="Pascal_Snake", steps=[step]))
+
+        item = self._item(Path("Pascal_Snake.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "Pascal Snake"
+
+    def test_preview_uses_working_copy_not_original(self) -> None:
+        """Preview reads from WorkingCopy, preserving original isolation."""
+        session = EditSession()
+        step = RuleStep(type="replace", parameters={"from": "_", "to": " "})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session.open(original)
+
+        # Mutate WorkingCopy without commit
+        session.update_param(step.id, "from", "-")
+        session.update_param(step.id, "to", "_")
+
+        item = self._item(Path("a-b.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "a_b"
+
+        # Original is untouched
+        item2 = self._item(Path("a-b.txt"))
+        PreviewEngine.generate_preview([item2], original)
+        assert item2.preview_name == "a-b"
+
+    def test_commit_syncs_preview_source_with_repo(self) -> None:
+        """After commit, WorkingCopy matches repository state (preview source)."""
+        session = EditSession()
+        step = RuleStep(type="replace", parameters={"from": "_", "to": " "})
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "-")
+        session.update_param(step.id, "to", "_")
+        session.commit()
+
+        item = self._item(Path("a-b.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "a_b"
+
+    def test_discard_reverts_preview_source(self) -> None:
+        """After discard, WorkingCopy reverts to original (preview source revert)."""
+        session = EditSession()
+        step = RuleStep(type="replace", parameters={"from": "_", "to": " "})
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "from", "-")
+        session.update_param(step.id, "to", "_")
+        session.discard()
+
+        item = self._item(Path("a-b.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "a-b"
+
+    def test_empty_rule_preview_returns_original_name(self) -> None:
+        """Empty rule → preview names equal original base names (identity transform)."""
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[]))
+
+        item = self._item(Path("hello.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "hello"
+
+    def test_number_rule_index_from_context(self) -> None:
+        """Preview provides correct index context for number rule."""
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[
+            RuleStep(type="number", parameters={"start": "1", "step": "1", "padding": "2", "position": "prefix"}),
+        ]))
+
+        items = [self._item(Path("a.txt")), self._item(Path("b.txt"))]
+        PreviewEngine.generate_preview(items, session.rule)
+        assert items[0].preview_name == "01_a"
+        assert items[1].preview_name == "02_b"
+
+    def test_post_commit_rule_equals_original_for_preview(self) -> None:
+        """After commit, session.rule produces same preview as original."""
+        session = EditSession()
+        step = RuleStep(type="replace", parameters={"from": "old", "to": "new"})
+        original = Rule(id="r1", name="Test", steps=[step])
+        session.open(original)
+        session.commit()
+
+        item1 = self._item(Path("old_file.txt"))
+        item2 = self._item(Path("old_file.txt"))
+
+        PreviewEngine.generate_preview([item1], session.rule)
+        PreviewEngine.generate_preview([item2], original)
+        assert item1.preview_name == item2.preview_name == "new_file"
+
+    def test_undo_auto_updates_preview_source(self) -> None:
+        """Undo reverts WorkingCopy → preview regenerates from reverted state."""
+        session = EditSession()
+        step = RuleStep(type="add_prefix", parameters={"text": "X_"})
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "text", "Y_")
+        session.undo()
+
+        item = self._item(Path("file.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "X_file"
+
+    def test_redo_auto_updates_preview_source(self) -> None:
+        """Redo reapplies undo → preview source reflects redo."""
+        session = EditSession()
+        step = RuleStep(type="add_prefix", parameters={"text": "X_"})
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+        session.update_param(step.id, "text", "Y_")
+        session.undo()
+        session.redo()
+
+        item = self._item(Path("file.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert item.preview_name == "Y_file"
+
+    def test_preview_no_side_effect_on_dirty_flag(self) -> None:
+        """Preview reads must not change dirty state."""
+        session = EditSession()
+        step = RuleStep(type="replace", parameters={"from": "a", "to": "b"})
+        session.open(Rule(id="r1", name="Test", steps=[step]))
+
+        item = self._item(Path("a.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        assert session.is_dirty() is False
+        assert item.preview_name == "b"
+
+        session.update_param(step.id, "from", "x")
+        PreviewEngine.generate_preview([item], session.rule)
+        assert session.is_dirty() is True
+        assert item.preview_name == "a"
+
+    def test_multiple_preview_calls_idempotent(self) -> None:
+        """Multiple preview calls with same WorkingCopy produce same results."""
+        session = EditSession()
+        session.open(Rule(id="r1", name="Test", steps=[
+            RuleStep(type="replace", parameters={"from": "_", "to": "-"}),
+        ]))
+
+        item = self._item(Path("a_b.txt"))
+        PreviewEngine.generate_preview([item], session.rule)
+        first = item.preview_name
+        assert first == "a-b"
+
+        PreviewEngine.generate_preview([item], session.rule)
+        second = item.preview_name
+        assert second == "a-b"
+
+    @staticmethod
+    def _item(p: Path) -> FileItem:
+        return FileItem(
+            full_path=p, original_name=p.name,
+            base_name=p.stem, extension=p.suffix,
+            item_type=ItemType.FILE,
+        )

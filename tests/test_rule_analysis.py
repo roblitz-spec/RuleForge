@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from engine.preview_engine import PreviewEngine
-from engine.rule_analysis import RuleAnalysis
+from engine.rule_analysis import RuleAnalysis, RuleWarning
 from models.enums import ItemType
 from models.file_item import FileItem
 from models.rule import Rule
@@ -167,3 +167,173 @@ class TestPreviewEngineWithAnalysis:
             assert "01_" in items[0].preview_name
             assert "02_" in items[1].preview_name
             assert "03_" in items[2].preview_name
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-13: Rule Analysis Warnings
+# ═══════════════════════════════════════════════════════════════════
+
+class TestRuleAnalysisWarningsUnit:
+    """Unit tests for RuleAnalysis warning detection."""
+
+    def test_empty_rule_warning(self) -> None:
+        r = RuleAnalysis.analyze(Rule(id="r", name="r", steps=[]))
+        assert r.uses_index is False
+        assert r.uses_metadata is False
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_RULE
+
+    def test_empty_rule_no_other_warnings(self) -> None:
+        """Empty rule produces only EMPTY_RULE, not per-step warnings."""
+        r = RuleAnalysis.analyze(Rule(id="r", name="r", steps=[]))
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_RULE
+
+    def test_clean_rule_no_warnings(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+            RuleStep(type="trim", parameters={}),
+            RuleStep(type="case", parameters={"mode": "upper"}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert r.warnings == []
+
+    def test_remove_text_empty(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="remove_text", parameters={"text": ""}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_PARAM
+
+    def test_remove_text_with_default(self) -> None:
+        """Default parameter '' → warning."""
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="remove_text", parameters={}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_PARAM
+
+    def test_remove_text_nonempty(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="remove_text", parameters={"text": "x"}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert r.warnings == []
+
+    def test_add_prefix_empty(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="add_prefix", parameters={"text": ""}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_PARAM
+
+    def test_add_prefix_nonempty(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="add_prefix", parameters={"text": "IMG_"}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert r.warnings == []
+
+    def test_add_suffix_empty(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="add_suffix", parameters={"text": ""}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_PARAM
+
+    def test_regex_replace_empty_pattern(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="regex_replace", parameters={"pattern": "", "replacement": "x"}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_PARAM
+
+    def test_replace_empty_from(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="replace", parameters={"from": "", "to": "x"}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 1
+        assert r.warnings[0].code == RuleWarning.EMPTY_PARAM
+
+    def test_replace_nonempty(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert r.warnings == []
+
+    def test_multiple_warnings(self) -> None:
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="remove_text", parameters={}),
+            RuleStep(type="add_prefix", parameters={"text": ""}),
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+            RuleStep(type="regex_replace", parameters={"pattern": ""}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert len(r.warnings) == 3
+
+    def test_number_only_no_warning(self) -> None:
+        """Number rule with default params → no warning (defaults are valid)."""
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="number", parameters={}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert r.uses_index is True
+        assert r.warnings == []
+
+    def test_insert_empty_text_no_warning(self) -> None:
+        """Insert with empty text → valid (Insert Rule spec: text='' = no-op)."""
+        rule = Rule(id="r", name="r", steps=[
+            RuleStep(type="insert", parameters={"text": ""}),
+        ])
+        r = RuleAnalysis.analyze(rule)
+        assert r.warnings == []
+
+    def test_rule_warning_dataclass(self) -> None:
+        w = RuleWarning(code=RuleWarning.EMPTY_RULE, message="test")
+        assert w.code == "empty_rule"
+        assert w.message == "test"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-14: format_warnings
+# ═══════════════════════════════════════════════════════════════════
+
+class TestFormatWarnings:
+    """Tests for RuleAnalysis.format_warnings() — pure function, no Qt."""
+
+    def test_no_warnings_returns_none(self) -> None:
+        analysis = RuleAnalysis.analyze(Rule(id="r", name="r", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+        ]))
+        assert analysis.format_warnings() is None
+
+    def test_single_warning(self) -> None:
+        analysis = RuleAnalysis.analyze(Rule(id="r", name="r", steps=[]))
+        text = analysis.format_warnings()
+        assert text is not None
+        assert text.startswith("⚠")
+
+    def test_multiple_warnings_joined(self) -> None:
+        analysis = RuleAnalysis.analyze(Rule(id="r", name="r", steps=[
+            RuleStep(type="remove_text", parameters={}),
+            RuleStep(type="add_prefix", parameters={}),
+        ]))
+        text = analysis.format_warnings()
+        assert text is not None
+        lines = text.split("\n")
+        assert len(lines) == 2
+        for line in lines:
+            assert line.startswith("⚠")
+
+    def test_empty_warnings_list(self) -> None:
+        """Explicit empty list → None (same as no warnings)."""
+        analysis = RuleAnalysis()
+        analysis.warnings = []
+        assert analysis.format_warnings() is None

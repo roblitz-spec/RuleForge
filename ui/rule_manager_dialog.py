@@ -145,6 +145,16 @@ class RuleManagerDialog(QDialog):
 
         right.addWidget(step_group, stretch=1)
 
+        # WP-14: warning panel — non-blocking rule analysis display
+        self._warning_panel = QLabel()
+        self._warning_panel.setVisible(False)
+        self._warning_panel.setWordWrap(True)
+        self._warning_panel.setStyleSheet(
+            "QLabel { color: #856404; background-color: #fff3cd; "
+            "border: 1px solid #ffeeba; border-radius: 4px; padding: 6px; }"
+        )
+        right.addWidget(self._warning_panel)
+
         # ── 步骤参数编辑（QStackedWidget，7 页）──
         self._param_stack = QStackedWidget()
 
@@ -452,6 +462,21 @@ class RuleManagerDialog(QDialog):
             item = QListWidgetItem(f"{num} {label}")
             item.setData(1, id(step))
             self._step_list.addItem(item)
+        self._refresh_warnings()
+
+    def _refresh_warnings(self) -> None:
+        """WP-14: analyze current WorkingCopy and display non-blocking warnings."""
+        if self._current_rule is None:
+            self._warning_panel.setVisible(False)
+            return
+        from engine.rule_analysis import RuleAnalysis
+        analysis = RuleAnalysis.analyze(self._current_rule)
+        text = analysis.format_warnings()
+        if text is None:
+            self._warning_panel.setVisible(False)
+            return
+        self._warning_panel.setText(text)
+        self._warning_panel.setVisible(True)
 
     def _current_step(self) -> RuleStep | None:
         if self._current_rule is None:
