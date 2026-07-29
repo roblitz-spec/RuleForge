@@ -49,6 +49,10 @@ class RuleRepository:
     def remove(self, rule_id: str) -> None:
         self._rules = [r for r in self._rules if r.id != rule_id]
 
+    def replace_rules(self, rules: list[Rule]) -> None:
+        """替换全部规则（深拷贝）。用于 Preset 加载等批量替换场景。"""
+        self._rules = deepcopy(rules)
+
     # ---------- WP-16: 复制 ----------
 
     def duplicate(self, rule: Rule) -> Rule:
