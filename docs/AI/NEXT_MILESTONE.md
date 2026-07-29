@@ -1,14 +1,15 @@
 # ResourceHub — Next Milestone Planning
 
-## Current: M7 (Architecture Consolidation & Quality Hardening)
+## Completed: M7 (Architecture Consolidation & Quality Hardening) ✅
 
-**Active branch**: `m10-phase3a-rule-analysis`
+**Branch**: `m10-phase3a-rule-analysis`
+**Tag**: `M7-complete`
 
 | WP | Title | Status |
 |---|---|---|
 | WP-19 | ID Generation Consolidation | ACCEPTED |
 | WP-20 | EditSession Interaction Coverage | ACCEPTED |
-| WP-21 | Documentation Synchronization | IN PROGRESS |
+| WP-21 | Documentation Synchronization | ACCEPTED |
 
 **Regression**: 398 PASS
 

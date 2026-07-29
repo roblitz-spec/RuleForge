@@ -10,6 +10,7 @@
 | `M4.1-complete` | Architecture Alignment Patch |
 | `M5-complete` | Smart Previews & Analysis Warnings，356 tests |
 | `M6-complete` | Rule Duplication（复制规则），384 tests |
+| `M7-complete` | Architecture Consolidation（架构整合），398 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
