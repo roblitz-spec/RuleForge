@@ -2,11 +2,11 @@
 
 | id | type | status | version | date |
 |---|---|---|---|---|
-| `GOV-REF-003` | `REF` | `accepted` | `1.0` | `2026-07-29` |
+| `GOV-REF-006` | `REF` | `accepted` | `1.0` | `2026-07-29` |
 
 | source |
 |---|
-| `GOV-REF-005` (Governance_Object_Index_Framework.md) |
+| `GOV-REF-003` (Governance_Object_Index_Framework.md) |
 
 ---
 
@@ -36,6 +36,8 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REC-002` | `Governance_Revision_Report_PAC1.md` | `REC` | `accepted` | `1.0` | — |
 | `GOV-REV-001` | `PAC1_Architecture_Retrospective.md` | `REV` | `accepted` | `1.0` | — |
 | `GOV-PLAN-001` | `PAC2_Project_Charter.md` | `PLAN` | `accepted` | `1.0` | `GOV-REC-001` |
+| `GOV-REF-006` | `Governance_Object_Registry.md` | `REF` | `accepted` | `1.0` | `GOV-REF-003` |
+| `GOV-REF-003` | `Governance_Object_Index_Framework.md` | `REF` | `accepted` | `1.0` | `GOV-REV-006` |
 
 ### AI Governance Documents (`docs/AI/`)
 
@@ -144,9 +146,9 @@ GOV-STATUS-002 (AI_HANDOFF)
 
 | Metric | Value |
 |---|---|
-| Total objects | 35 |
-| Accepted | 31 |
-| Superseded | 3 |
+| Total objects | 38 |
+| Accepted | 35 |
+| Superseded | 2 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
 | Objects with `primary_source` | 5 |
@@ -175,4 +177,4 @@ This registry is updated when:
 
 **Do not edit this registry to change a document's content.** The registry reflects document state; it does not define it. If a document's status, version, or relationships are incorrect, update the document first, then update the registry.
 
-This document itself is a governance object: `GOV-REF-003`, type `REF`, status `accepted`, version `1.0`.
+This document itself is a governance object: `GOV-REF-006`, type `REF`, status `accepted`, version `1.0`.

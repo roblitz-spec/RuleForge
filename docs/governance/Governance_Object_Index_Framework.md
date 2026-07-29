@@ -2,7 +2,7 @@
 
 | id | type | status | version | date |
 |---|---|---|---|---|
-| `GOV-REF-005` | `REF` | `accepted` | `1.0` | `2026-07-29` |
+| `GOV-REF-003` | `REF` | `accepted` | `1.0` | `2026-07-29` |
 
 | source | predecessor |
 |---|---|
