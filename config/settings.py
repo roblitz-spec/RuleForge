@@ -8,6 +8,7 @@ _ORGANIZATION = "ResourceHub"
 _APPLICATION = "ResourceHub"
 _KEY_POLICY = "rename/policy"
 _KEY_LAST_RULE = "rule/last_selected"
+_KEY_LAST_PRESET = "preset/last_selected"
 
 
 class Settings:
@@ -38,3 +39,10 @@ class Settings:
 
     def set_last_rule_id(self, rule_id: str) -> None:
         self._qsettings.setValue(_KEY_LAST_RULE, rule_id)
+
+    def get_last_preset_id(self) -> str | None:
+        raw = self._qsettings.value(_KEY_LAST_PRESET)
+        return raw if isinstance(raw, str) else None
+
+    def set_last_preset_id(self, preset_id: str) -> None:
+        self._qsettings.setValue(_KEY_LAST_PRESET, preset_id)

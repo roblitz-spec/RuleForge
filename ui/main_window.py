@@ -148,6 +148,9 @@ class MainWindow(QMainWindow):
         preset_layout.addWidget(self._preset_mgr_btn)
         main_layout.addLayout(preset_layout)
 
+        # 启动时恢复上次使用的预设
+        self._restore_last_preset()
+
         # ---------- 第四部分：文件列表 ----------
         self._file_model = FileTableModel()
         self._sort_proxy = SortProxyModel()
@@ -425,6 +428,31 @@ class MainWindow(QMainWindow):
 
     # ── Preset ────────────────────────────────────────────
 
+    def _restore_last_preset(self) -> None:
+        last_id = self._settings.get_last_preset_id()
+        if last_id is None:
+            return
+
+        presets = {p.id: p for p in self._preset_store.load_all()}
+        preset = presets.get(last_id)
+        if preset is None:
+            return  # preset no longer exists — silently skip
+
+        from copy import deepcopy
+        self._repo.replace_rules(deepcopy(preset.rules))
+        self._repo.save()
+
+        # 刷新下拉框，选中恢复的 preset
+        self._preset_combo.blockSignals(True)
+        for i in range(self._preset_combo.count()):
+            if self._preset_combo.itemData(i) == last_id:
+                self._preset_combo.setCurrentIndex(i)
+                break
+        self._preset_combo.blockSignals(False)
+
+        # 同步规则下拉框
+        self._refresh_rule_combo_from_repo()
+
     def _refresh_preset_combo(self) -> None:
         self._preset_combo.blockSignals(True)
         self._preset_combo.clear()
@@ -446,6 +474,9 @@ class MainWindow(QMainWindow):
         from copy import deepcopy
         self._repo.replace_rules(deepcopy(preset.rules))
         self._repo.save()
+
+        # persistera sista valda preset
+        self._settings.set_last_preset_id(preset_id)
 
         # 刷新规则下拉框
         self._rule_combo.blockSignals(True)
