@@ -1,14 +1,14 @@
 # ResourceHub — Current Status
 
 **Branch**: `m10-phase3a-rule-analysis`
-**Date**: 2026-07-29
-**Active Baseline**: M7 (M6-complete frozen)
+**Date**: 2026-07-24
+**Active Baseline**: M8 (M8-complete)
 
 ## Test Status
 
 | Metric | Value |
 |---|---|
-| Automated Tests | **398 PASS** (M6: 384 + WP-19: +4 + WP-20: +10) |
+| Automated Tests | **447 PASS** (M7: 398 + WP-22: +22 + WP-23: +9 + WP-24: +10 + WP-25: +8) |
 | Regression Matrix | **PASS** |
 | Unit + Integration | PASS |
 | Preview==Rename E2E | PASS |
@@ -25,6 +25,7 @@
 | Item | Status |
 |---|---|
 | Architecture | Stable |
+| Rule Presets (M8) | Stable |
 | Rule Duplication (M6) | Stable |
 | ID Generation Consolidation (M7 WP-19) | Stable |
 | EditSession Interaction Coverage (M7 WP-20) | Stable |
@@ -35,20 +36,25 @@
 
 ## Current Focus
 
-**M7 Architecture Consolidation & Quality Hardening — Complete ✅**
+**M8 Rule Presets — Complete ✅**
 
 Completed:
-- M6: Rule Duplication ✅ (frozen at `M6-complete`)
-- WP-19: ID Generation Consolidation ✅
-- WP-20: EditSession Interaction Coverage ✅
-- WP-21: Documentation Synchronization ✅
+- WP-22: Preset Data Model & Storage ✅
+- WP-23: Preset Manager UI ✅
+- WP-24: Toolbar Preset Selector ✅
+- WP-25: Startup Preset Restoration ✅
+- WP-26: Documentation & Baseline Freeze ✅
 
-Next: Awaiting M8 authorization.
+Next: Awaiting M8 Milestone Review & Closure.
 
 ## Recent Reviews
 
 | Review | Scope | Status | Risk | Issues |
 |---|---|---|---|---|
+| WP-22 Review | Preset data model + store, 22 tests | ACCEPTED | LOW | 0 |
+| WP-23 Review | PresetManagerDialog + workflow, 9 tests | ACCEPTED | LOW | 0 |
+| WP-24 Review | Toolbar selector, 10 tests | ACCEPTED | LOW | 0 |
+| WP-25 Review | Startup restoration, 8 tests | ACCEPTED | LOW | 0 |
 | M6 Independent | `repository.py`, `ui/rule_manager_dialog.py`, `tests/test_rule_editor.py` | APPROVED | LOW | 6 observations (all non-blocking) |
 | WP-19 Review | ID consolidation, 3 files | ACCEPTED | LOW | 0 |
 | WP-20 Review | EditSession tests, 10 tests | ACCEPTED | LOW | 0 |
@@ -117,6 +123,9 @@ The following modules are frozen. Changes require explicit approval:
 
 | Tag | Content |
 |---|---|
+| `M6-complete` | Rule Duplication, 384 tests |
+| `M7-complete` | Architecture Consolidation, 398 tests |
+| `M8-complete` | Rule Presets, 447 tests |
 | `M12-complete` | Number Rule |
 | `M13-complete` | Insert Rule |
 | `M14-complete` | Date Rule |

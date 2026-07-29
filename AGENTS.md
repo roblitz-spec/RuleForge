@@ -11,6 +11,7 @@
 | `M5-complete` | Smart Previews & Analysis Warnings，356 tests |
 | `M6-complete` | Rule Duplication（复制规则），384 tests |
 | `M7-complete` | Architecture Consolidation（架构整合），398 tests |
+| `M8-complete` | Rule Presets（规则预设），447 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -132,6 +133,39 @@ RuleEngine 与 PreviewEngine 之间通过 `context` 字典通信。
 - **稳定基线**：每个 Milestone 锁 Tag、锁行为
 - **功能冻结**：完成后不轻易改，只能 Bug Fix
 - **文档同步**：行为变更必须更新 AGENTS.md
+
+## Rule Presets（M8）
+
+### 预设数据模型
+
+- `Preset` dataclass：`id`（唯一标识）、`name`、`description`、`rules: list[Rule]`、`version=1`
+- `PresetStore`：JSON 持久化存储于 `~/.resourcehub/presets.json`
+- 提供完整 CRUD：`save` / `save_all` / `load_all` / `delete` / `rename`
+
+### 预设管理对话框
+
+- `PresetManagerDialog`（QDialog）：保存 / 加载 / 删除 / 重命名
+- 操作前通过 `EditSession` 脏状态守卫防止未保存修改丢失
+- `Repository.replace_rules()`：以原子方式替换全部 Rule 列表
+
+### 工具栏预设选择器
+
+- 主窗口工具栏 QComboBox：下拉显示全部已保存预设
+- 切换预设立即同步 `Repository` → 刷新规则下拉框 → 刷新预览
+- "管理预设"按钮打开 `PresetManagerDialog`
+
+### 启动恢复
+
+- `Settings.get_last_preset_id()` / `set_last_preset_id()`：基于 QSettings 持久化
+- 应用启动时自动恢复上次使用的预设（`_restore_last_preset()`）
+- 预设已删除或不存在 → 静默跳过
+
+### 架构约束
+
+- `Repository` 始终为唯一运行时真源
+- `PresetStore` 仅为持久化存储，不参与运行时状态
+- `Settings` 仅存储预设标识符（元数据），不存储规则数据
+- 加载预设通过 `Repository.replace_rules()`（公有 API）
 
 ## One Milestone, One Core Feature
 

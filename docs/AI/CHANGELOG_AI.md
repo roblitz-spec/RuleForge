@@ -2,6 +2,15 @@
 
 > For architecture decisions behind these changes, see [`DECISION_LOG.md`](DECISION_LOG.md).
 
+## M8 (Rule Presets)
+- **WP-22: Preset Data Model & Storage** — `Preset` dataclass + `PresetStore` JSON CRUD
+- **WP-23: Preset Manager UI** — `PresetManagerDialog` (save/load/delete/rename) + `Repository.replace_rules()`
+- **WP-24: Toolbar Preset Selector** — QComboBox preset switcher in MainWindow toolbar
+- **WP-25: Startup Preset Restoration** — `Settings` last-used preset persistence + auto-restore on launch
+- **Tests**: 447 PASS (M7: 398 + WP-22: +22 + WP-23: +9 + WP-24: +10 + WP-25: +8)
+- **New Modules**: `models/preset.py`, `storage/preset_store.py`, `ui/preset_manager_dialog.py`
+- **New Tests**: `tests/test_preset.py`, `tests/test_preset_workflow.py`, `tests/test_preset_toolbar.py`, `tests/test_preset_startup.py`
+
 ## M7 (Architecture Consolidation & Quality Hardening)
 - **WP-19: ID Generation Consolidation** — `RuleRepository.generate_unique_id()` as single ID authority, removed duplicate from dialog
 - **WP-20: EditSession Interaction Coverage** — 10 tests covering EditSession × duplicate boundary
