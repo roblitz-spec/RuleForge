@@ -7,22 +7,29 @@
 
 | Field | Value |
 |---|---|
-| Milestone | M11.2 |
-| Status | **Stabilization** |
+| Active Baseline | M8 (M8-complete) |
+| Status | **Complete** (M8 Rule Presets) |
 | Architecture | Stable |
-| Feature Freeze | Enabled |
+| Feature Freeze | Enabled (M8 modules frozen) |
+| Tests | 447 PASS |
 | Blocker | None |
 
 > See `CURRENT_STATUS.md` for full test counts, frozen modules, and current priorities.
 
 ## Next Action
 
-1. Documentation Alignment
-2. Validator Consolidation
-3. Golden-path E2E
-4. Prepare M12 Rule IDE
+Awaiting M9 scope decision. See `docs/planning/Roadmap_Refresh.md` for candidate features.
 
 > See `CURRENT_STATUS.md` § Current Focus for details.
+
+## Governance References
+
+- [Governance Resolution](docs/governance/Governance_Resolution_v1.0.md) — PAC-1 Review Findings & Proposed Statements
+- [Project Charter](docs/governance/Project_Charter_v1.0.md) — project identity, capabilities, tech stack
+- [Decision Registry](docs/governance/Decision_Registry_v1.0.md) — 18 confirmed decisions + ADR index
+- [Governance Baseline](docs/governance/Governance_Baseline_v1.0.md) — artifact inventory, gaps, maturity
+- [Roadmap](docs/planning/Roadmap_Refresh.md) — completed milestones, planned features
+- [PAC-1 Discovery](docs/PAC/) — 13 evidence reports + consolidated review
 
 ## Key Files to Read
 
@@ -33,3 +40,4 @@
 5. `AI_WORKFLOW.md` — how we work together
 6. `TEST_STRATEGY.md` — test layers and release gates
 7. `NEXT_MILESTONE.md` — long-term candidate features
+8. `docs/governance/Governance_Resolution_v1.0.md` — open governance items (PG-01 through PG-10)
