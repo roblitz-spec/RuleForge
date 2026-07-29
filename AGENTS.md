@@ -4,6 +4,12 @@
 
 | Tag | 内容 |
 |---|---|
+| `M2-complete` | EditSession, WorkingCopy, UI Integration |
+| `M3-complete` | Commit, Undo/Redo, Preview Isolation |
+| `M4-complete` | Auto Save, Unsaved Changes Warning, Session Persistence |
+| `M4.1-complete` | Architecture Alignment Patch |
+| `M5-complete` | Smart Previews & Analysis Warnings，356 tests |
+| `M6-complete` | Rule Duplication（复制规则），384 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
