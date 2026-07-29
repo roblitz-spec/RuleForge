@@ -1,6 +1,7 @@
 # Project Charter v1.0
 
-**PAC-1 | Date: 2026-07-24 | Source: `docs/PAC/14_Alignment_Review.md` §2, §11**
+**PAC-1 | Date: 2026-07-24 | Primary Source: [`Governance_Resolution_v1.0.md`](Governance_Resolution_v1.0.md)**
+**Supporting Evidence: `docs/PAC/14_Alignment_Review.md` §2, §11**
 
 ---
 
@@ -44,13 +45,7 @@
 
 ## Governance
 
-The project is governed by the AI Workflow SOP (`docs/AI/AI_WORKFLOW.md`) and Development Constitution (`docs/AI/DEVELOPMENT_CONSTITUTION.md`).
-
-Key governance principles:
-- One Milestone, One Core Feature
-- Feature Freeze after Milestone close
-- Backward compatibility required
-- Evidence-based decision making
+The project is governed by the rules, processes, and artifact inventory defined in [`Governance_Baseline_v1.0.md`](Governance_Baseline_v1.0.md).
 
 All governance artifacts are in `docs/governance/` and `docs/AI/`.
 
@@ -70,4 +65,5 @@ This charter is based on PAC-1 discovery evidence. The following items are **not
 
 ---
 
-**Source evidence**: `docs/PAC/01_Project_Identity.md`, `docs/PAC/02_Product_Evolution.md`, `docs/PAC/14_Alignment_Review.md`.
+**Primary Source**: [`Governance_Resolution_v1.0.md`](Governance_Resolution_v1.0.md) — PAC-1 Review Findings & Proposed Governance Statements.
+**Supporting Evidence**: `docs/PAC/01_Project_Identity.md`, `docs/PAC/02_Product_Evolution.md`, `docs/PAC/14_Alignment_Review.md`.

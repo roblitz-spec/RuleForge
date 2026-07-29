@@ -1,6 +1,36 @@
 # Governance Baseline v1.0
 
-**PAC-1 | Date: 2026-07-24 | Source: `docs/PAC/04_Governance_Baseline.md`, `docs/PAC/14_Alignment_Review.md` §1, §9**
+**PAC-1 | Date: 2026-07-24 | Primary Source: [`Project_Charter_v1.0.md`](Project_Charter_v1.0.md)**
+**Supporting Evidence: `docs/PAC/04_Governance_Baseline.md`, `docs/PAC/14_Alignment_Review.md` §1, §9**
+
+---
+
+## Governance Rules
+
+The project is governed by the Development Constitution (`docs/AI/DEVELOPMENT_CONSTITUTION.md`, 10 principles) and the following governance rules derived from PAC-1 evidence:
+
+| Rule | Source |
+|---|---|
+| One Milestone, One Core Feature | `AGENTS.md`, D-10 |
+| Feature Freeze after Milestone close | ADR-003, `DEVELOPMENT_CONSTITUTION.md` P4 |
+| Backward compatibility required | `DEVELOPMENT_CONSTITUTION.md` P2 |
+| Evidence-based decision making | `AI_WORKFLOW.md` §3, PAC-1 |
+| Extension over Modification | `DEVELOPMENT_CONSTITUTION.md` P3 |
+| Tests Required for every behavioral change | `DEVELOPMENT_CONSTITUTION.md` P6 |
+
+## Governance Process
+
+The standard development workflow is defined in `docs/AI/AI_WORKFLOW.md` (6-phase SOP):
+
+```
+Inspection → Human Review → Implementation → Documentation Update → Governance Validation → Commit
+```
+
+The Mandatory Milestone Checklist is defined in `docs/AI/README_AI.md`. Every Milestone must update: CURRENT_STATUS, CHANGELOG_AI, NEXT_MILESTONE, AI_HANDOFF. ARCHITECTURE.md is updated when boundaries change. DECISION_LOG.md is updated on architectural decisions.
+
+## Governance Roles
+
+Decision authority is not yet formalized. All ADRs are currently "Accepted" without attribution. See [G-08](#governance-gaps).
 
 ---
 
@@ -82,4 +112,5 @@ All 14 PAC-1 discovery reports are in `docs/PAC/` for full evidence traceability
 
 ---
 
-**Source evidence**: `docs/PAC/04_Governance_Baseline.md`, `docs/PAC/11_Governance_Gap_Analysis.md`, `docs/PAC/14_Alignment_Review.md`.
+**Primary Source**: [`Project_Charter_v1.0.md`](Project_Charter_v1.0.md) — project identity and governance structure.
+**Supporting Evidence**: `docs/PAC/04_Governance_Baseline.md`, `docs/PAC/11_Governance_Gap_Analysis.md`, `docs/PAC/14_Alignment_Review.md`.

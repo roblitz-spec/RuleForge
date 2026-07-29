@@ -1,6 +1,7 @@
 # Roadmap Refresh
 
-**PAC-1 | Date: 2026-07-24 | Source: `docs/AI/NEXT_MILESTONE.md`, `docs/PAC/14_Alignment_Review.md` §4, §11**
+**PAC-1 | Date: 2026-07-24 | Primary Source: [`Decision_Registry_v1.0.md`](../governance/Decision_Registry_v1.0.md)**
+**Supporting Evidence: `docs/AI/NEXT_MILESTONE.md`, `docs/PAC/14_Alignment_Review.md` §4, §11**
 
 ---
 
@@ -81,4 +82,5 @@ From `docs/AI/CURRENT_STATUS.md` § Deferred Technical Debt:
 
 ---
 
-**Source evidence**: `docs/AI/NEXT_MILESTONE.md`, `docs/AI/CURRENT_STATUS.md`, `docs/AI/AI_HANDOFF.md`, `docs/PAC/02_Product_Evolution.md`, `docs/PAC/14_Alignment_Review.md`.
+**Primary Source**: [`Decision_Registry_v1.0.md`](../governance/Decision_Registry_v1.0.md) — approved decisions that inform roadmap priorities.
+**Supporting Evidence**: `docs/AI/NEXT_MILESTONE.md`, `docs/AI/CURRENT_STATUS.md`, `docs/AI/AI_HANDOFF.md`, `docs/PAC/02_Product_Evolution.md`, `docs/PAC/14_Alignment_Review.md`.

@@ -1,6 +1,7 @@
 # Decision Registry v1.0
 
-**PAC-1 | Date: 2026-07-24 | Source: `docs/PAC/05_Decision_Registry.md`, `docs/PAC/14_Alignment_Review.md` §7**
+**PAC-1 | Date: 2026-07-24 | Primary Source: [`Governance_Baseline_v1.0.md`](Governance_Baseline_v1.0.md)**
+**Supporting Evidence: `docs/PAC/05_Decision_Registry.md`, `docs/PAC/14_Alignment_Review.md` §7**
 
 ---
 
@@ -48,7 +49,7 @@
 
 ## Missing ADRs
 
-Two architectural decisions lack formal ADRs:
+Two architectural decisions are tracked as gaps in [`Governance_Baseline_v1.0.md`](Governance_Baseline_v1.0.md) (G-05):
 
 | # | Decision | Source Evidence |
 |---|---|---|
@@ -57,4 +58,5 @@ Two architectural decisions lack formal ADRs:
 
 ---
 
-**Source evidence**: `docs/PAC/05_Decision_Registry.md`, `docs/AI/DECISION_LOG.md`, `docs/PAC/14_Alignment_Review.md` §7.
+**Primary Source**: [`Governance_Baseline_v1.0.md`](Governance_Baseline_v1.0.md) — governance rules, processes, and gap tracking.
+**Supporting Evidence**: `docs/PAC/05_Decision_Registry.md`, `docs/AI/DECISION_LOG.md`, `docs/PAC/14_Alignment_Review.md` §7.
