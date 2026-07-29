@@ -54,15 +54,14 @@ class RuleRepository:
     def duplicate(self, rule: Rule) -> Rule:
         """深拷贝规则并赋予唯一 ID，通过 add() 插入仓库。"""
         copy_rule = deepcopy(rule)
-        copy_rule.id = self._generate_unique_id()
+        copy_rule.id = self.generate_unique_id()
         copy_rule.name = f"{rule.name} (副本)"
         copy_rule.pinned = False
         self.add(copy_rule)
         return copy_rule
 
-    # ---------- 内部 ----------
-
-    def _generate_unique_id(self) -> str:
+    def generate_unique_id(self) -> str:
+        """返回仓库中尚未使用的 `rule_N` 格式 ID。"""
         existing = {r.id for r in self._rules}
         idx = 1
         while f"rule_{idx}" in existing:

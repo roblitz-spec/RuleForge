@@ -15,7 +15,16 @@ from models.enums import ItemType
 from models.file_item import FileItem
 from models.rule import Rule
 from models.rule_step import RuleStep
+from storage.repository import RuleRepository
 from storage.session_store import SessionStore
+
+
+def _temp_repo() -> RuleRepository:
+    """Create a temporary RuleRepository backed by a temp file."""
+    td = tempfile.mkdtemp()
+    repo = RuleRepository(Path(td) / "rules.json")
+    repo.load()
+    return repo
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -243,8 +252,6 @@ class TestUIIntegrationScenario:
 
     def test_ui_flow_select_edit_save(self) -> None:
         """Simulate WP-7: select → edit → commit → save → reload."""
-        from storage.repository import RuleRepository
-
         with tempfile.NamedTemporaryFile(
             mode="w", suffix=".json", delete=False, encoding="utf-8",
         ) as f:
@@ -1532,3 +1539,214 @@ class TestAutoRefreshPipeline:
             base_name=p.stem, extension=p.suffix,
             item_type=ItemType.FILE,
         )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-20: EditSession Interaction Coverage (M7)
+# ═══════════════════════════════════════════════════════════════════
+
+class TestDuplicateWithActiveSession:
+    """Duplicate a rule while an EditSession is active on it."""
+
+    def test_duplicate_does_not_affect_working_copy(self) -> None:
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original")
+        repo.add(rule)
+
+        session = EditSession()
+        session.open(rule)
+        assert session.is_dirty() is False
+
+        # duplicate the rule being edited
+        dup = repo.duplicate(repo.find("r1"))
+        assert dup.id != "r1"
+        assert dup.name == "Original (副本)"
+
+        # session state is unaffected
+        assert session.state == SessionState.ACTIVE
+        assert session.is_dirty() is False
+        assert session.rule.id == "r1"
+        assert session.rule.name == "Original"
+
+    def test_duplicate_does_not_affect_original(self) -> None:
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+        ])
+        repo.add(rule)
+
+        session = EditSession()
+        session.open(rule)
+
+        dup = repo.duplicate(repo.find("r1"))
+        # original in repository unchanged
+        assert repo.find("r1").name == "Original"
+
+        # session's original reference unchanged
+        assert session.original.name == "Original"
+        assert session.original.id == "r1"
+
+    def test_duplicate_during_dirty_session(self) -> None:
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+        ])
+        repo.add(rule)
+
+        session = EditSession()
+        session.open(rule)
+        step = session.rule.steps[0]
+        session.update_param(step.id, "to", "changed")
+        assert session.is_dirty() is True
+
+        dup = repo.duplicate(repo.find("r1"))
+
+        # session stays dirty, WorkingCopy unchanged
+        assert session.is_dirty() is True
+        assert session.rule.steps[0].parameters["to"] == "changed"
+
+        # duplicate reflects original repo state, not dirty WorkingCopy
+        assert dup.steps[0].parameters["to"] == "b"
+
+    def test_duplicate_then_open_duplicate_for_editing(self) -> None:
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original")
+        repo.add(rule)
+
+        dup = repo.duplicate(repo.find("r1"))
+
+        session = EditSession()
+        session.open(dup)
+        assert session.is_dirty() is False
+        session.rule.name = "Modified Duplicate"
+
+        # original in repo unchanged
+        assert repo.find("r1").name == "Original"
+        assert session.rule.name == "Modified Duplicate"
+
+
+class TestDuplicateEditSessionIsolation:
+    """Duplication must not cross-contaminate active EditSession state."""
+
+    def test_duplicate_while_editing_another_rule(self) -> None:
+        repo = _temp_repo()
+        rule_a = Rule(id="r1", name="Rule A", steps=[
+            RuleStep(type="replace", parameters={"from": "x"}),
+        ])
+        rule_b = Rule(id="r2", name="Rule B")
+        repo.add(rule_a)
+        repo.add(rule_b)
+
+        # edit Rule A
+        session = EditSession()
+        session.open(rule_a)
+        session.update_param(rule_a.steps[0].id, "to", "edited")
+        assert session.is_dirty() is True
+
+        # duplicate Rule B (different rule)
+        dup = repo.duplicate(repo.find("r2"))
+        assert dup.id != "r2"
+
+        # Rule A session unaffected
+        assert session.is_dirty() is True
+        assert session.rule.id == "r1"
+        assert session.rule.steps[0].parameters["to"] == "edited"
+
+    def test_duplicate_does_not_create_session(self) -> None:
+        """duplicate() is a Repository operation, not a session operation."""
+        repo = _temp_repo()
+        repo.add(Rule(id="r1", name="Test"))
+        dup = repo.duplicate(repo.find("r1"))
+
+        # no session was opened — verify dup is in repo only
+        assert repo.find(dup.id) is not None
+        assert repo.find(dup.id).name == "Test (副本)"
+
+
+class TestDuplicatePersistenceWithSession:
+    """Duplicate persistence when sessions are involved."""
+
+    def test_duplicate_persist_and_reload(self) -> None:
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original")
+        repo.add(rule)
+        repo.save()
+
+        dup = repo.duplicate(repo.find("r1"))
+        repo.save()
+
+        # reload from disk
+        repo.load()
+        assert len(repo.all_rules()) == 2
+        reloaded = repo.find(dup.id)
+        assert reloaded is not None
+        assert reloaded.name == "Original (副本)"
+        assert reloaded.id == dup.id
+        assert reloaded.pinned is False
+
+    def test_duplicate_saved_original_via_session(self) -> None:
+        """Session edits committed then duplicate — verify both persist on reload."""
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original", steps=[
+            RuleStep(type="replace", parameters={"from": "a"}),
+        ])
+        repo.add(rule)
+        repo.save()
+
+        # edit and commit (commit mutates the original in-place)
+        session = EditSession()
+        session.open(rule)
+        step_id = rule.steps[0].id
+        session.update_param(step_id, "to", "committed")
+        session.commit()
+        repo.save()
+
+        dup = repo.duplicate(repo.find("r1"))
+        repo.save()
+
+        repo.load()
+        original = repo.find("r1")
+        duplicate = repo.find(dup.id)
+        assert original.steps[0].parameters["to"] == "committed"
+        assert duplicate.steps[0].parameters["to"] == "committed"
+
+
+class TestDuplicateMutationIsolation:
+    """Mutating a duplicate must not affect the original or active WorkingCopy."""
+
+    def test_mutate_duplicate_via_session(self) -> None:
+        repo = _temp_repo()
+        rule = Rule(id="r1", name="Original", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+        ])
+        repo.add(rule)
+
+        dup = repo.duplicate(repo.find("r1"))
+
+        # open and modify the duplicate in a session
+        session = EditSession()
+        session.open(dup)
+        session.update_param(dup.steps[0].id, "to", "dup_value")
+
+        # original in repo unchanged
+        assert repo.find("r1").steps[0].parameters["to"] == "b"
+
+    def test_session_commit_original_then_duplicate_unchanged(self) -> None:
+        """Committing the original does not affect the already-created duplicate."""
+        repo = _temp_repo()
+        rule_a = Rule(id="r1", name="Top", steps=[
+            RuleStep(type="replace", parameters={"from": "a", "to": "b"}),
+        ])
+        repo.add(rule_a)
+        dup = repo.duplicate(repo.find("r1"))
+
+        session_a = EditSession()
+        session_a.open(repo.find("r1"))
+        step_id = repo.find("r1").steps[0].id
+        session_a.update_param(step_id, "to", "committed_a")
+        session_a.commit()
+        repo.save()
+
+        repo.load()
+        assert repo.find("r1").steps[0].parameters["to"] == "committed_a"
+        assert repo.find(dup.id).steps[0].parameters["to"] == "b"

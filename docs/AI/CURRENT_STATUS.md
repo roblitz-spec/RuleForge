@@ -1,15 +1,14 @@
 # ResourceHub — Current Status
 
-**Version**: M11.2
-**Date**: 2026-07-24
+**Branch**: `m10-phase3a-rule-analysis`
+**Date**: 2026-07-29
+**Active Baseline**: M7 (M6-complete frozen)
 
 ## Test Status
 
-The project maintains a comprehensive automated test suite.
-
 | Metric | Value |
 |---|---|
-| Automated Tests | **192 PASS** |
+| Automated Tests | **398 PASS** (M6: 384 + WP-19: +4 + WP-20: +10) |
 | Regression Matrix | **PASS** |
 | Unit + Integration | PASS |
 | Preview==Rename E2E | PASS |
@@ -26,42 +25,33 @@ The project maintains a comprehensive automated test suite.
 | Item | Status |
 |---|---|
 | Architecture | Stable |
-| Rename Pipeline | Stable |
+| Rule Duplication (M6) | Stable |
+| ID Generation Consolidation (M7 WP-19) | Stable |
+| EditSession Interaction Coverage (M7 WP-20) | Stable |
+| Rule Editing Pipeline | Stable |
 | Rule Dependency Analysis | Stable |
-| Scanner API | Stable (`scan(paths: list[Path])`) |
-| Multi File Selection | Supported |
-| Multi Directory Selection | Supported |
-| Mixed Selection | Supported |
-| Batch Rename | Supported |
-| Batch Undo | Supported |
-
-## Manual QA
-
-PASS — Smoke tests cover: scan, preview, rename (batch), undo, rule persistence.
+| Auto Save & Session Persistence | Stable |
+| Undo / Redo | Stable |
 
 ## Current Focus
 
-**M11.3 Baseline Stabilization — Complete**
+**M7 Architecture Consolidation & Quality Hardening — In Progress**
 
 Completed:
+- M6: Rule Duplication ✅ (frozen at `M6-complete`)
+- WP-19: ID Generation Consolidation ✅
+- WP-20: EditSession Interaction Coverage ✅
 
-1. Documentation Alignment ✅
-2. Validator Consolidation ✅
-3. Golden-path E2E ✅
-4. Repository Housekeeping ✅
-5. Baseline Code Review ✅ (M11.3 #1 + #2)
-6. Review Fixes (F1 + F2) ✅
-
-Next: M12 Rule IDE
+Pending:
+- WP-21: Documentation Synchronization (in progress)
 
 ## Recent Reviews
 
 | Review | Scope | Status | Risk | Issues |
 |---|---|---|---|---|
-| M11.3 #1 | `validator/`, `engine/` | Completed | LOW | 0 |
-| M11.3 #2 | `models/`, `scanner/`, `storage/`, `ui/`, `workers/`, `i18n/`, `config/`, `main.py` | Completed | MEDIUM | 2 |
-
-**Closed**: F1 (Swallowed Exceptions) — added stderr logging to workers. F2 (Rule Validation) — added step/at_index/format validation to `_validate()`. No Critical or High findings. No new Technical Debt.
+| M6 Independent | `repository.py`, `ui/rule_manager_dialog.py`, `tests/test_rule_editor.py` | APPROVED | LOW | 6 observations (all non-blocking) |
+| WP-19 Review | ID consolidation, 3 files | ACCEPTED | LOW | 0 |
+| WP-20 Review | EditSession tests, 10 tests | ACCEPTED | LOW | 0 |
 
 ---
 

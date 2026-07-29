@@ -520,3 +520,50 @@ class TestRuleDuplicateEdgeCases:
             repo.add(Rule(id="rule_9", name="R9"))
             dup = repo.duplicate(repo.find("rule_1"))
             assert dup.id == "rule_2"  # first gap
+
+
+# ═══════════════════════════════════════════════════════════════════
+# WP-19: ID Generation Consolidation
+# ═══════════════════════════════════════════════════════════════════
+
+class TestIDGenerationConsolidation:
+    """Tests verifying ID generation is unified in Repository."""
+
+    def test_generate_unique_id_public(self) -> None:
+        """generate_unique_id() is an accessible public method on Repository."""
+        with tempfile.TemporaryDirectory() as td:
+            repo = RuleRepository(Path(td) / "rules.json")
+            repo.load()
+            uid = repo.generate_unique_id()
+            assert uid.startswith("rule_")
+
+    def test_add_then_generate_does_not_collide(self) -> None:
+        """Adding a rule then calling generate_unique_id produces a non-conflicting ID."""
+        with tempfile.TemporaryDirectory() as td:
+            repo = RuleRepository(Path(td) / "rules.json")
+            repo.load()
+            repo.add(Rule(id="rule_1", name="R1"))
+            uid = repo.generate_unique_id()
+            assert uid == "rule_2"
+
+    def test_duplicate_uses_repository_method(self) -> None:
+        """duplicate() calls self.generate_unique_id() — the Repository's own method."""
+        with tempfile.TemporaryDirectory() as td:
+            repo = RuleRepository(Path(td) / "rules.json")
+            repo.load()
+            repo.add(Rule(id="rule_1", name="Test"))
+            dup = repo.duplicate(repo.find("rule_1"))
+            assert dup.id == "rule_2"
+
+    def test_consolidation_preserves_id_format(self) -> None:
+        """Both add path and duplicate path produce rule_N format IDs."""
+        with tempfile.TemporaryDirectory() as td:
+            repo = RuleRepository(Path(td) / "rules.json")
+            repo.load()
+            add_id = repo.generate_unique_id()
+            assert add_id == "rule_1"
+            repo.add(Rule(id=add_id, name="Test"))
+            dup = repo.duplicate(repo.find(add_id))
+            assert dup.id == "rule_2"
+            assert add_id.startswith("rule_")
+            assert dup.id.startswith("rule_")

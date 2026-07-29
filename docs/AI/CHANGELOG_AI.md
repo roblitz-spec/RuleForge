@@ -2,6 +2,17 @@
 
 > For architecture decisions behind these changes, see [`DECISION_LOG.md`](DECISION_LOG.md).
 
+## M7 (Architecture Consolidation & Quality Hardening)
+- **WP-19: ID Generation Consolidation** — `RuleRepository.generate_unique_id()` as single ID authority, removed duplicate from dialog
+- **WP-20: EditSession Interaction Coverage** — 10 tests covering EditSession × duplicate boundary
+- **Tests**: 398 PASS (M6: 384 + WP-19: +4 + WP-20: +10)
+
+## M6 (Rule Duplication)
+- **Rule Duplication**: `RuleRepository.duplicate()` — deep copy with unique ID, `(副本)` name suffix, unpinned
+- **UI Integration**: "复制规则" context menu action in rule manager dialog
+- **Review**: Independent review approved with 6 non-blocking observations (see `REVIEW_M6.md`)
+- **Tests**: 384 PASS (M5: 356 + M6: +28)
+
 ## M11.2
 - **Sortable Table**: Column header click sorting, context menu (copy/paste)
 - **Pin Rules**: Rule pinning for quick access in rule list

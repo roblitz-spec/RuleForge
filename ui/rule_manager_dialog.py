@@ -348,13 +348,6 @@ class RuleManagerDialog(QDialog):
                 self._rule_list.setCurrentRow(i)
                 return
 
-    def _generate_id(self) -> str:
-        existing = {r.id for r in self._repo.all_rules()}
-        idx = 1
-        while f"rule_{idx}" in existing:
-            idx += 1
-        return f"rule_{idx}"
-
     def _on_rule_selected(
         self, current: QListWidgetItem | None, _prev: QListWidgetItem | None,
     ) -> None:
@@ -390,7 +383,7 @@ class RuleManagerDialog(QDialog):
             self._refresh_step_list()
 
     def _on_add_rule(self) -> None:
-        new_rule = Rule(id=self._generate_id(), name="新规则", steps=[])
+        new_rule = Rule(id=self._repo.generate_unique_id(), name="新规则", steps=[])
         self._repo.add(new_rule)
         self._repo.save()
         self._refresh_rule_list()

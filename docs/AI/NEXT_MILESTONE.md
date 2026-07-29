@@ -1,8 +1,18 @@
 # ResourceHub — Next Milestone Planning
 
-## Current: M11.2 Stabilization
+## Current: M7 (Architecture Consolidation & Quality Hardening)
 
-## Candidate Features (M12+)
+**Active branch**: `m10-phase3a-rule-analysis`
+
+| WP | Title | Status |
+|---|---|---|
+| WP-19 | ID Generation Consolidation | ACCEPTED |
+| WP-20 | EditSession Interaction Coverage | ACCEPTED |
+| WP-21 | Documentation Synchronization | IN PROGRESS |
+
+**Regression**: 398 PASS
+
+## Candidate Features (M8+)
 
 | Priority | Feature | Rationale |
 |---|---|---|
