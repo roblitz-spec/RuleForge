@@ -1,6 +1,7 @@
 # Governance Baseline v1.0
 
-**PAC-1 | Date: 2026-07-24 | Primary Source: [`Project_Charter_v1.0.md`](Project_Charter_v1.0.md)**
+**Status**: Accepted v1.0 | **PAC-1** | **Date**: 2026-07-29
+**Primary Source**: [`Project_Charter_v1.0.md`](Project_Charter_v1.0.md)
 **Supporting Evidence: `docs/PAC/04_Governance_Baseline.md`, `docs/PAC/14_Alignment_Review.md` §1, §9**
 
 ---

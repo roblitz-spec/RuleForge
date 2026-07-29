@@ -1,6 +1,7 @@
 # Decision Registry v1.0
 
-**PAC-1 | Date: 2026-07-24 | Primary Source: [`Governance_Baseline_v1.0.md`](Governance_Baseline_v1.0.md)**
+**Status**: Accepted v1.0 | **PAC-1** | **Date**: 2026-07-29
+**Primary Source**: [`Governance_Baseline_v1.0.md`](Governance_Baseline_v1.0.md)
 **Supporting Evidence: `docs/PAC/05_Decision_Registry.md`, `docs/PAC/14_Alignment_Review.md` §7**
 
 ---

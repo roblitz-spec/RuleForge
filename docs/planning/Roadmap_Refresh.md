@@ -1,6 +1,7 @@
 # Roadmap Refresh
 
-**PAC-1 | Date: 2026-07-24 | Primary Source: [`Decision_Registry_v1.0.md`](../governance/Decision_Registry_v1.0.md)**
+**Status**: Accepted v1.0 | **PAC-1** | **Date**: 2026-07-29
+**Primary Source**: [`Decision_Registry_v1.0.md`](../governance/Decision_Registry_v1.0.md)
 **Supporting Evidence: `docs/AI/NEXT_MILESTONE.md`, `docs/PAC/14_Alignment_Review.md` §4, §11**
 
 ---

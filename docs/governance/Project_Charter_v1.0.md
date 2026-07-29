@@ -1,6 +1,7 @@
 # Project Charter v1.0
 
-**PAC-1 | Date: 2026-07-24 | Primary Source: [`Governance_Resolution_v1.0.md`](Governance_Resolution_v1.0.md)**
+**Status**: Accepted v1.0 | **PAC-1** | **Date**: 2026-07-29
+**Primary Source**: [`Governance_Resolution_v1.0.md`](Governance_Resolution_v1.0.md)
 **Supporting Evidence: `docs/PAC/14_Alignment_Review.md` §2, §11**
 
 ---
