@@ -1,5 +1,13 @@
 # PG-02 WP-01: Current State Assessment — Governance Object Index
 
+| id | type | status | version | date |
+|---|---|---|---|---|
+| `GOV-REV-006` | `REV` | `accepted` | `1.0` | `2026-07-29` |
+
+| part_of |
+|---|
+| PG-02 |
+
 **Date**: 2026-07-29 | **Phase**: PAC-2 P0 Discovery | **Reference**: PG-02 (`Governance_Resolution_v1.0.md`)
 
 ---

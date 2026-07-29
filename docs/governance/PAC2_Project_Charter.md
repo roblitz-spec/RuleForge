@@ -1,5 +1,13 @@
 # PAC-2 Project Charter
 
+| id | type | status | version | date |
+|---|---|---|---|---|
+| `GOV-PLAN-001` | `PLAN` | `accepted` | `1.0` | `2026-07-29` |
+
+| primary_source |
+|---|
+| `GOV-REC-001` (Governance_Acceptance_PAC1.md) |
+
 **Date**: 2026-07-29 | **Phase**: Initiation | **Predecessor**: PAC-1 (Accepted v1.0, commit [`8bf5125`](../../8bf5125))
 
 ---

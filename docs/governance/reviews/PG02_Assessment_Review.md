@@ -1,5 +1,13 @@
 # PG-02 WP-02: Assessment Review — Governance Object Index
 
+| id | type | status | version | date |
+|---|---|---|---|---|
+| `GOV-REV-007` | `REV` | `accepted` | `1.0` | `2026-07-29` |
+
+| part_of |
+|---|
+| PG-02 |
+
 **Date**: 2026-07-29 | **Phase**: PAC-2 P0 Review | **Reviewed Artifact**: `PG02_Current_State_Assessment.md` (commit `5561c5e`)
 
 ---

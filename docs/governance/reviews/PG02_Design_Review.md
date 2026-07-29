@@ -1,5 +1,13 @@
 # PG-02 WP-04: Design Review — Governance Object Index Framework
 
+| id | type | status | version | date |
+|---|---|---|---|---|
+| `GOV-REV-008` | `REV` | `accepted` | `1.0` | `2026-07-29` |
+
+| part_of |
+|---|
+| PG-02 |
+
 **Date**: 2026-07-29 | **Phase**: PAC-2 P0 Review | **Reviewed Artifact**: `Governance_Object_Index_Framework.md` (commit `16ea0bb`)
 
 ---

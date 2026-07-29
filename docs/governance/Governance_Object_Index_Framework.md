@@ -1,5 +1,15 @@
 # Governance Object Index Framework v1.0-draft
 
+| id | type | status | version | date |
+|---|---|---|---|---|
+| `GOV-REF-005` | `REF` | `accepted` | `1.0` | `2026-07-29` |
+
+| source | predecessor |
+|---|---|
+| `GOV-REV-006` (PG-02 Current State Assessment) | — |
+
+---
+
 **Date**: 2026-07-29 | **Phase**: PAC-2 P0 — WP-03 Framework Design | **Baseline**: PG-02 Current State Assessment (commit `5561c5e`), Assessment Review (commit `76a1c74`)
 
 ---
