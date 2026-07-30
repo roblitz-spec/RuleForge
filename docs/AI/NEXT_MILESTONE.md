@@ -1,31 +1,39 @@
-# ResourceHub — Next Milestone Planning
+# RuleForge — Next Milestone Planning
 
-## Completed: M7 (Architecture Consolidation & Quality Hardening) ✅
+## Product Direction
 
-**Branch**: `m10-phase3a-rule-analysis`
-**Tag**: `M7-complete`
+AI-assisted Rule IDE. Core value: Example → Rule Inference → Rule → Test/Preview → Execute → Reuse. ResourceHub is the origin; batch file rename is the initial adapter.
 
-| WP | Title | Status |
+## Completed Milestones
+
+| Milestone | Feature | Tests | Tag |
+|---|---|---|---|
+| M2–M8 | Batch Rename pipeline (scanner, rules, preview, rename, undo, presets) | 447 | M8-complete |
+| M9 | RuleInference Engine (Example → Rule) | 480 | M9-complete |
+
+## Strategic Roadmap
+
+| Milestone | Capability | Rationale |
 |---|---|---|
-| WP-19 | ID Generation Consolidation | ACCEPTED |
-| WP-20 | EditSession Interaction Coverage | ACCEPTED |
-| WP-21 | Documentation Synchronization | ACCEPTED |
+| M10 | **Rule IDE** — editing, inspection, testing/debugging, preview, persistence/reuse | Core development environment |
+| M11 | **Rule Runtime** — reliable execution, batch processing, error handling, recovery | Production-grade execution |
+| Later | Additional adapters/use cases | Post-core extensibility |
 
-**Regression**: 398 PASS
+## M10 Candidate Scope
 
-## Candidate Features (M8+)
+Build the Rule IDE on the existing `editor/` skeleton (EditSession, DomainValidator):
 
-| Priority | Feature | Rationale |
-|---|---|---|
-| P1 | **Filter System** | Allow users to filter files by extension/pattern before rename |
-| P2 | **EXIF Date** | Use EXIF metadata for photo date instead of file mtime |
-| P3 | **Rule Presets** | Save/load complete rule pipelines as named presets |
-| P4 | **Variables** | User-defined variables in Rule parameters (e.g., `$counter`) |
+- Rule editing UI (step CRUD, parameter editing)
+- Rule inspection (visualize step pipeline)
+- Testing/debugging (apply rule to test inputs, preview results)
+- RuleInference integration (paste examples → get candidate rules)
+- Persistence (save/load beyond presets)
 
 ## Deferred
 
 | Feature | Reason |
 |---|---|
+| Filter System (ex-P1) | Subsumed into Rule IDE inspection features |
+| EXIF Date (ex-P2) | Adapter-level feature; defer to after M11 |
+| Variables (ex-P4) | Requires RuleEngine extension; defer to M10+ |
 | Prefix/Suffix Merge | Compatibility risk; needs migration plan |
-| Multi-level Undo | Added complexity; current single-level sufficient |
-| Dark Mode / Theme | Purely cosmetic; low priority vs. functionality |

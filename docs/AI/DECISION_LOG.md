@@ -59,3 +59,20 @@
   3. All future Scanner/Indexer/Rename/Metadata code reviews must include network filesystem performance as a default review item.
   4. Local SSD testing alone is insufficient — network filesystem latency must be considered in design.
 - **Alternatives Considered**: Keep `resolve()` but add caching. Rejected — caching adds complexity; `os.scandir()` paths are already absolute.
+
+## ADR-009: Product Direction Convergence
+
+- **Milestone**: M9
+- **Status**: Accepted
+- **Decision**: Converge on ONE product direction: AI-assisted Rule IDE (recommended name: RuleForge). ResourceHub is the origin and batch file rename is the initial adapter/use case — neither is a competing product direction.
+- **Product Hierarchy**:
+  - Product: AI-assisted Rule IDE (RuleForge)
+  - Core Intelligence: RuleInference Engine (Example → Rule)
+  - Core: Rule Engine / Rule Model
+  - Development Environment: Rule IDE (`editor/` skeleton exists)
+  - Execution: Rule Runtime
+  - Initial Adapter: File Rename
+- **Roadmap**: M9 RuleInference (✅) → M10 Rule IDE → M11 Rule Runtime → Later: additional adapters
+- **Reason**: Single product identity eliminates roadmap ambiguity (UD-01, UD-02, PG-01). The existing `editor/` package (EditSession, DomainValidator, 382 lines) is the Rule IDE skeleton — build on it rather than maintain parallel roadmaps.
+- **Alternatives Considered**: Keep "ResourceHub" name with batch rename as primary identity. Rejected — contradicts the evolution already underway (Rule Engine, EditSession, RuleAnalysis, RuleInference).
+- **Naming**: Recommended "RuleForge". Mechanical rename deferred to avoid disrupting development.

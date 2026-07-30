@@ -17,6 +17,7 @@
 | `M14-complete` | Date Rule 完成，144 tests |
 | `M15-complete` | AddSuffix Rule 完成，AI Memory 系统建立 |
 | `M16-complete` | AI Memory v2.0 Governance，Selection Features |
+| `M9-complete` | RuleInference 引擎，Example → Rule 推断，30 tests |
 
 ## RuleStep 类型总览
 
@@ -58,12 +59,20 @@
 - `padding = 0` → 不补零
 - RuleEngine 保持无状态，不存储计数器
 
+## RuleInference（M9）
+
+- `engine/rule_inference.py`：纯函数模块，从 (original, desired) 示例对推导 RuleStep
+- 算法：候选生成 → 交集 → 组合搜索（深度 3）
+- 检测能力：case（4 模式）、trim（3 模式）、replace/remove_text（SequenceMatcher 差分）、add_prefix/add_suffix、insert
+- 多步骤流水线：自动发现组合（如 trim → case、replace → case）
+
 ## 架构原则
 
 - RuleEngine：纯函数，无状态，通过 `context` 参数传递索引
 - RenamePlanEngine：统一生成计划 + 冲突检测 + 合法性校验
 - RenameEngine：仅按 `plan.action` 执行，不重复决策
 - Preview ↔ Rename 共享同一份 RenamePlan
+- RuleInference：纯函数，无状态，组合搜索
 
 ## Context Contract
 

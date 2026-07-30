@@ -7,18 +7,18 @@
 
 | Field | Value |
 |---|---|
-| Active Baseline | M8 (M8-complete) |
-| Status | **Complete** (M8 Rule Presets) |
+| Active Baseline | M9 (M9-complete) |
+| Status | **Active** (M9 RuleInference Engine) |
 | Architecture | Stable |
 | Feature Freeze | Enabled (M8 modules frozen) |
-| Tests | 447 PASS |
+| Tests | 480 PASS (30 new) |
 | Blocker | None |
 
 > See `CURRENT_STATUS.md` for full test counts, frozen modules, and current priorities.
 
 ## Next Action
 
-Awaiting M9 scope decision. See `docs/planning/Roadmap_Refresh.md` for candidate features.
+M10: Rule IDE — rule editing, inspection, testing, preview, persistence. See `docs/planning/Roadmap_Refresh.md` for details.
 
 > See `CURRENT_STATUS.md` § Current Focus for details.
 

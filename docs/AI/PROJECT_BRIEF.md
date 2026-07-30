@@ -1,37 +1,50 @@
-# ResourceHub — Project Brief
+# RuleForge — Project Brief
+
+> **Product Direction**: AI-assisted Rule IDE. ResourceHub was the origin — batch file rename is the initial adapter/use case. The core value proposition is: Example → Rule Inference → Rule → Test/Preview → Execute → Reuse.
 
 ## What
 
-ResourceHub is a Windows desktop batch file rename tool built with Python 3.12+ and PySide6.
+RuleForge is an AI-assisted Rule IDE. Given transformation examples (original → desired), it infers candidate rules, lets users refine and test them, and executes transformations reliably. Initial adapter: batch file rename. Built with Python 3.12+ and PySide6.
 
-## Why
+## Product Hierarchy
 
-To provide a safe, previewable, rule-based batch rename experience with full Unicode support and undo capability.
+| Layer | Component | Status |
+|---|---|---|
+| Product | AI-assisted Rule IDE | M10 (next) |
+| Core Intelligence | RuleInference Engine (M9) | ✅ Complete |
+| Core | Rule Engine / Rule Model | ✅ 10 types |
+| Development Environment | Rule IDE (`editor/`) | 🟡 Skeleton (382 lines) |
+| Execution | Rule Runtime (`engine/`) | ✅ Stable |
+| Adapter | File Rename (`scanner/`, `ui/`) | ✅ Stable |
 
 ## Current Version
 
-**M11.2** — Sortable Table, Context Menu, Pin Rules, Regex Assistant
+**M9** — RuleInference Engine (Example → Rule)
 
 ## Completed Capabilities
 
-- **Scanner**: Multi-path input (`scan(paths: list[Path])`), file + directory + mixed, non-recursive via `os.scandir()`, SMB-optimized (no `resolve()`)
+- **Rule Inference** (M9): Pure-function engine, (original, desired) pairs → candidate RuleSteps via combinatorial search
+- **Scanner**: Multi-path input, SMB-optimized (no `resolve()`)
 - **Rule Engine**: 10 RuleStep types (replace, remove_text, regex_replace, case, trim, number, insert, date, add_prefix, add_suffix)
-- **Rule Analysis**: Rule dependency pre-analysis (`uses_index` / `uses_metadata`), context constructed on demand
-- **Preview Engine**: Real-time preview with context (index, metadata via MetadataProvider)
-- **RenamePlan Engine**: Unified plan generation + conflict detection + legality checks, Windows case-only rename support (`samefile()`)
-- **Rename Engine**: Policy-based execution (FAIL/SKIP/OVERWRITE), rescan after rename
+- **Rule Analysis**: Dependency pre-analysis (`uses_index` / `uses_metadata`)
+- **Preview Engine**: Real-time preview with context (index, metadata)
+- **RenamePlan Engine**: Conflict detection + legality checks
+- **Rename Engine**: Policy-based execution (FAIL/SKIP/OVERWRITE)
 - **Undo Engine**: Single-level undo via OperationLogger
-- **Multi Selection**: ExtendedSelection in QTableView, batch rename with single Undo
-- **Rule Manager**: Full CRUD + RuleStep editor with type selection, parameter editing, ordering, pin rules, regex assistant
-- **File Table**: Sortable columns, context menu
-- **Settings**: QSettings-based RenamePolicy persistence
-- **i18n**: zh_CN / en_US via Qt Linguist .ts files
-- **Packaging**: PyInstaller build with translations
+- **Rule Presets** (M8): Save/load rule pipelines as named presets
+- **Rule Manager**: Full CRUD + RuleStep editor
+- **Rule Duplication** (M6): Clone existing rules
+- **EditSession**: Working copy, dirty tracking, commit boundary, undo/redo
+- **DomainValidator**: UI-independent rule/step validation
+- **i18n**: zh_CN / en_US
+- **Packaging**: PyInstaller build
 
-## Current Stage
+## Development Roadmap
 
-M11.2 Stabilization. Architecture stable.
-
-## Next Stage
-
-See `NEXT_MILESTONE.md`.
+| Milestone | Capability | Status |
+|---|---|---|
+| M2–M8 | Batch Rename pipeline | ✅ |
+| M9 | Example → Rule Inference | ✅ |
+| M10 | Rule IDE | → Next |
+| M11 | Rule Runtime hardening | Planned |
+| Later | Additional adapters | Deferred

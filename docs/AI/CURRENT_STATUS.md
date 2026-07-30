@@ -1,14 +1,14 @@
 # ResourceHub — Current Status
 
 **Branch**: `m10-phase3a-rule-analysis`
-**Date**: 2026-07-24
-**Active Baseline**: M8 (M8-complete)
+**Date**: 2026-07-30
+**Active Baseline**: M9 (M9-complete)
 
 ## Test Status
 
 | Metric | Value |
 |---|---|
-| Automated Tests | **447 PASS** (M7: 398 + WP-22: +22 + WP-23: +9 + WP-24: +10 + WP-25: +8) |
+| Automated Tests | **480 PASS** (M8: 447 + M9: +30 + regression) |
 | Regression Matrix | **PASS** |
 | Unit + Integration | PASS |
 | Preview==Rename E2E | PASS |
@@ -36,16 +36,14 @@
 
 ## Current Focus
 
-**M8 Rule Presets — Complete ✅**
+**M9 RuleInference Engine — Complete ✅**
 
 Completed:
-- WP-22: Preset Data Model & Storage ✅
-- WP-23: Preset Manager UI ✅
-- WP-24: Toolbar Preset Selector ✅
-- WP-25: Startup Preset Restoration ✅
-- WP-26: Documentation & Baseline Freeze ✅
+- `engine/rule_inference.py`: Pure-function Example → Rule Inference (195 lines)
+- `tests/test_rule_inference.py`: 30 tests (case, trim, replace, prefix, suffix, multi-step, edge cases)
+- Combinatorial search: permissive candidate generation → consensus intersection → recursive search (depth 3)
 
-Next: Awaiting M8 Milestone Review & Closure.
+Next: M10 Rule IDE — rule editing, inspection, testing, preview, persistence.
 
 ## Recent Reviews
 
