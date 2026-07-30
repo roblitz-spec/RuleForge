@@ -5,8 +5,8 @@ The RuleSession is the single mutable layer between the Rule domain
 model and future IDE/CLI/API interfaces.  All interactive rule
 manipulation flows through the session.
 
-Lifecycle:
-  INFERRED → open() → EDITABLE → commit() → TESTED → finalize() → EXECUTABLE
+Lifecycle (SessionState):
+  NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → EXECUTED
 """
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from engine.preview_pipeline import ExamplePreviewResult, preview_rule
 from models.inferred_rule import InferredRule
 from models.rule import Rule
 from models.rule_lifecycle import RuleLifecycle
+from models.session_state import SessionState, InvalidStateTransition, transition
 from models.session_validation import SessionValidationResult
 from storage.inferred_rule_store import InferredRuleStore
 
@@ -28,6 +29,9 @@ class RuleSession:
 
     Wraps EditSession for working-copy management, DomainValidator for
     validation, and preview_pipeline for example-based testing.
+
+    SessionState is enforced at every operation boundary —
+    invalid transitions raise InvalidStateTransition.
 
     Usage:
         session = RuleSession()
@@ -43,6 +47,13 @@ class RuleSession:
     _edit_session: EditSession = field(default_factory=EditSession, init=False, repr=False)
     _store: InferredRuleStore | None = field(default=None, init=False, repr=False)
     _closed: bool = field(default=False, init=False)
+    _state: SessionState = field(default=SessionState.NEW, init=False)
+
+    # ── State management ─────────────────────────────────────────
+
+    def _advance(self, target: SessionState) -> None:
+        """Validate and perform a state transition."""
+        self._state = transition(self._state, target)
 
     # ── Lifecycle ────────────────────────────────────────────────
 
@@ -55,6 +66,8 @@ class RuleSession:
 
         The InferredRule's Rule is deep-copied into the EditSession
         working copy.  The original is preserved until commit().
+
+        Advances state: NEW → INFERRED.
         """
         if self._inferred_rule is not None:
             raise RuntimeError("Session already open — close first")
@@ -62,6 +75,7 @@ class RuleSession:
         self._edit_session.open(inferred_rule.rule)
         self._store = store
         self._closed = False
+        self._advance(SessionState.INFERRED)
 
     def close(self) -> None:
         """Close the session.  Idempotent."""
@@ -80,6 +94,11 @@ class RuleSession:
         if self._inferred_rule is None:
             raise RuntimeError("Session not open")
         return self._inferred_rule.lifecycle
+
+    @property
+    def state(self) -> SessionState:
+        """Current operational state of the session."""
+        return self._state
 
     @property
     def is_dirty(self) -> bool:
@@ -102,13 +121,22 @@ class RuleSession:
     # ── Editing ──────────────────────────────────────────────────
 
     def edit_step(self, step_id: str, key: str, value: object) -> None:
-        """Update a parameter on a RuleStep in the working copy."""
+        """Update a parameter on a RuleStep in the working copy.
+
+        Advances state to EDITING (unless already EDITING).
+        """
+        if self._state != SessionState.EDITING:
+            self._advance(SessionState.EDITING)
         self._edit_session.update_param(step_id, key, value)
 
     def undo(self) -> None:
+        if self._state != SessionState.EDITING:
+            self._advance(SessionState.EDITING)
         self._edit_session.undo()
 
     def redo(self) -> None:
+        if self._state != SessionState.EDITING:
+            self._advance(SessionState.EDITING)
         self._edit_session.redo()
 
     # ── Validation ───────────────────────────────────────────────
@@ -118,6 +146,9 @@ class RuleSession:
 
         Combines domain-level validation (DomainValidator) with
         session-level checks (empty rule, lifecycle).
+
+        Advances state to VALIDATED on success.
+        Does NOT advance on failure.
         """
         result = SessionValidationResult()
         rule = self.rule
@@ -129,6 +160,9 @@ class RuleSession:
         # Domain-level checks
         for issue in DomainValidator.validate_rule(rule):
             result.add_issue(issue)
+
+        if result.is_valid:
+            self._advance(SessionState.VALIDATED)
 
         return result
 
@@ -143,6 +177,8 @@ class RuleSession:
         If *examples* is None, uses the source examples from the
         InferredRule (with expected outputs for comparison).
 
+        Advances state to PREVIEW_READY on success.
+
         Args:
             examples: List of input strings to preview.
                       If None, uses source examples from inference.
@@ -151,39 +187,41 @@ class RuleSession:
             ExamplePreviewResult with predicted outputs and comparison.
         """
         if examples is not None:
-            return preview_rule(self.rule, examples)
-
-        if self._inferred_rule is not None and self._inferred_rule.source_examples:
+            result = preview_rule(self.rule, examples)
+        elif self._inferred_rule is not None and self._inferred_rule.source_examples:
             originals = [o for o, _ in self._inferred_rule.source_examples]
             expected = [d for _, d in self._inferred_rule.source_examples]
-            return preview_rule(self.rule, originals, expected)
+            result = preview_rule(self.rule, originals, expected)
+        else:
+            result = ExamplePreviewResult()
 
-        return ExamplePreviewResult()
+        self._advance(SessionState.PREVIEW_READY)
+        return result
 
     # ── Commit / Finalize ────────────────────────────────────────
 
     def commit(self) -> None:
-        """Persist working copy to the original Rule and advance to TESTED.
+        """Persist working copy to the original Rule.
 
-        This is the explicit commit boundary — after commit(), the
-        InferredRule contains the edited Rule and transitions from
-        EDITABLE to TESTED.
+        Advances state to COMMITTED and RuleLifecycle to TESTED.
         """
         if self._inferred_rule is None:
             raise RuntimeError("Session not open")
         self._edit_session.commit()
         self._inferred_rule.promote_to(RuleLifecycle.TESTED)
+        self._advance(SessionState.COMMITTED)
 
     def finalize(self) -> None:
-        """Advance to EXECUTABLE and persist to store (if available).
+        """Advance to EXECUTED and persist to store (if available).
 
-        After finalize(), the rule is ready for execution/reuse.
+        Advances SessionState to EXECUTED and RuleLifecycle to EXECUTABLE.
         """
         if self._inferred_rule is None:
             raise RuntimeError("Session not open")
         self._inferred_rule.promote_to(RuleLifecycle.EXECUTABLE)
         if self._store is not None:
             self._store.save(self._inferred_rule)
+        self._advance(SessionState.EXECUTED)
 
     def revert(self) -> None:
         """Discard all uncommitted changes, return to last committed state."""

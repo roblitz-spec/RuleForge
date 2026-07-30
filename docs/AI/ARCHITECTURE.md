@@ -13,6 +13,19 @@ run()          → full pipeline (infer → inspect → validate → preview →
 RuleWorkflow composes existing capabilities without owning state.
 RuleSession remains the authoritative mutable object.
 
+### SessionState (M10.5-B)
+
+Explicit workflow state model enforced at every operation boundary.
+
+```
+NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → EXECUTED
+```
+
+- `NEW` only → `INFERRED`; `EXECUTED` is terminal
+- Invalid transitions raise `InvalidStateTransition`
+- Failed operations do not advance state
+- `RuleLifecycle` tracks rule maturity separately (storage concern)
+
 ## Pipeline
 
 ```

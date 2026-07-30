@@ -94,3 +94,27 @@
   8. Repository and import namespace not renamed — no functional impact.
 - **Validation**: Full regression suite unchanged. No behavioral changes.
 - **Alternatives Considered**: Keep "ResourceHub" indefinitely. Rejected — contradicts ADR-009 product direction.
+
+## ADR-011: RuleSession Lifecycle
+
+- **Milestone**: M10.5-B
+- **Status**: Accepted
+- **Decision**: Introduce `SessionState` (`models/session_state.py`) as the authoritative workflow state model. Every `RuleSession` owns a `SessionState`; `RuleWorkflow` reads it but never writes it directly.
+- **Context**: Before ADR-011, `RuleLifecycle` was a conceptual-only enum with no enforcement. `RuleSession` had implicit state transitions buried inside `open()`, `commit()`, and `finalize()`. There was no way to detect invalid operation sequences, and no explicit state for validation or preview phases.
+- **SessionState states**: `NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → EXECUTED`
+- **Transition rules**:
+  - `NEW` only to `INFERRED`
+  - `INFERRED` to `EDITING`, `VALIDATED`, `PREVIEW_READY`, or `COMMITTED`
+  - `EDITING` to `EDITING`, `VALIDATED`, or `PREVIEW_READY`
+  - `VALIDATED` to `EDITING` or `PREVIEW_READY`
+  - `PREVIEW_READY` to `EDITING`, `VALIDATED`, or `COMMITTED`
+  - `COMMITTED` to `EDITING` or `EXECUTED`
+  - `EXECUTED` is terminal
+  - Invalid transitions raise `InvalidStateTransition`
+- **Consequences**:
+  1. `RuleSession` enforces transitions at every operation boundary.
+  2. Failed operations do not advance state (e.g., validation failure keeps current state).
+  3. `RuleWorkflow` reads `session.state` but delegates state changes to `RuleSession`.
+  4. `RuleLifecycle` remains for rule maturity tracking (InferredRuleStore persistence).
+  5. Future CLI/SDK/API/GUI must respect `SessionState` — it is the single workflow state authority.
+- **Alternatives Considered**: Keep `RuleLifecycle` as the sole state model. Rejected — not granular enough for workflow stages (no VALIDATED, PREVIEW_READY states). Merging session states into RuleLifecycle would break the InferredRuleStore persistence contract.
