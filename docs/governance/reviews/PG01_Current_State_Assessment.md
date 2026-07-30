@@ -1,4 +1,4 @@
-# PG-01 WP-01: Current State Assessment — Governance Versioning
+# PG-05 WP-01: Current State Assessment — Governance Versioning
 
 | id | type | status | version | date |
 |---|---|---|---|---|
@@ -6,7 +6,7 @@
 
 | part_of |
 |---|
-| PG-01 |
+| PG-05 |
 
 **Date**: 2026-07-29 | **Phase**: PAC-2 P0 Discovery | **Reference**: PG-05 (`Governance_Resolution_v1.0.md`)
 

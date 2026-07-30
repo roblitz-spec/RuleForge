@@ -87,7 +87,7 @@ Central registry of all governance objects in the ResourceHub repository. This d
 
 | id | filename | type | status | version | part_of |
 |---|---|---|---|---|---|
-| `GOV-REV-005` | `PG01_Current_State_Assessment.md` | `REV` | `accepted` | `1.0` | PG-01 |
+| `GOV-REV-005` | `PG01_Current_State_Assessment.md` | `REV` | `accepted` | `1.0` | PG-05 |
 | `GOV-REV-006` | `PG02_Current_State_Assessment.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-007` | `PG02_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-008` | `PG02_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
