@@ -35,7 +35,7 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REC-001` | `Governance_Acceptance_PAC1.md` | `REC` | `accepted` | `1.0` | — |
 | `GOV-REC-002` | `Governance_Revision_Report_PAC1.md` | `REC` | `accepted` | `1.0` | — |
 | `GOV-REV-001` | `PAC1_Architecture_Retrospective.md` | `REV` | `accepted` | `1.0` | — |
-| `GOV-PLAN-001` | `PAC2_Project_Charter.md` | `PLAN` | `accepted` | `1.0` | `GOV-REC-001` |
+| `GOV-PLAN-001` | `PAC2_Project_Charter.md` | `PLAN` | `superseded` | `1.0` | `GOV-REC-001` |
 | `GOV-REF-006` | `Governance_Object_Registry.md` | `REF` | `accepted` | `1.0` | `GOV-REF-003` |
 | `GOV-REF-003` | `Governance_Object_Index_Framework.md` | `REF` | `accepted` | `1.0` | `GOV-REV-006` |
 | `GOV-REF-007` | `Governance_Standards_Framework.md` | `REF` | `accepted` | `1.0` | `GOV-REV-010` |
@@ -54,6 +54,7 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-CONST-001` | `DEVELOPMENT_CONSTITUTION.md` | `CONST` | `accepted` | `1.0` | — |
 | `GOV-CONST-002` | `AI_WORKFLOW.md` | `CONST` | `accepted` | `1.0` | — |
 | `GOV-CHARTER-002` | `PROJECT_BRIEF.md` | `CHARTER` | `superseded` | `1.0` | — |
+| `GOV-CHARTER-003` | `PAC2_Governance_Operations_Charter.md` | `CHARTER` | `accepted` | `1.0` | `GOV-CHARTER-001` |
 | `GOV-ARCH-001` | `ARCHITECTURE.md` | `ARCH` | `accepted` | `1.0` | — |
 | `GOV-STATUS-001` | `CURRENT_STATUS.md` | `STATUS` | `accepted` | `1.0` | — |
 | `GOV-STATUS-002` | `AI_HANDOFF.md` | `STATUS` | `accepted` | `1.0` | `GOV-STATUS-001` |
@@ -187,12 +188,12 @@ GOV-GUIDE-007 (GS-05) ─┘  GOV-REV-010 (PAC-2 Standards Assessment)
 
 | Metric | Value |
 |---|---|
-| Total objects | 63 |
+| Total objects | 64 |
 | Accepted | 60 |
-| Superseded | 2 |
+| Superseded | 3 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
-| Objects with `primary_source` | 13 |
+| Objects with `primary_source` | 14 |
 | Objects with `depends_on` | 1 (references 6 targets) |
 | Objects with `part_of` | 18 |
 | PAC-1 frozen objects | 4 (GOV-GOV-002, GOV-CHARTER-001, GOV-GOV-001, GOV-DEC-002) |
