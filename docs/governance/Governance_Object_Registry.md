@@ -44,6 +44,8 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-GUIDE-005` | `Governance_Standard_Review.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
 | `GOV-GUIDE-006` | `Governance_Standard_Naming.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
 | `GOV-GUIDE-007` | `Governance_Standard_Traceability.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
+| `GOV-GUIDE-008` | `Governance_Operating_Model.md` | `GUIDE` | `accepted` | `1.0` | — |
+| `GOV-GUIDE-009` | `Governance_Capability_Activation_Model.md` | `GUIDE` | `accepted` | `1.0` | `GOV-GUIDE-008` |
 
 ### AI Governance Documents (`docs/AI/`)
 
@@ -66,6 +68,7 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REV-004` | `ARCHITECTURE_AUDIT_M4.md` | `REV` | `accepted` | `1.0` | — |
 | `GOV-REF-001` | `KNOWN_LIMITATIONS.md` | `REF` | `accepted` | `1.0` | — |
 | `GOV-REF-002` | `TEST_STRATEGY.md` | `REF` | `accepted` | `1.0` | — |
+| `GOV-REF-009` | `VERSIONING.md` | `REF` | `accepted` | `1.0` | — |
 
 ### Planning Documents (`docs/planning/`)
 
@@ -92,6 +95,13 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REV-007` | `PG02_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-008` | `PG02_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-009` | `PG02_Validation_Report.md` | `REV` | `accepted` | `1.0` | PG-02 |
+| `GOV-REV-014` | `PG01_Lifecycle_Status_Investigation.md` | `REV` | `accepted` | `1.0` | PG-01 |
+| `GOV-REV-015` | `CAR-001_Capability_Architecture_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Governance |
+| `GOV-REV-016` | `CMP-001_Capability_Migration_Plan.md` | `REV` | `accepted` | `1.0` | PAC-2 Governance |
+| `GOV-REV-017` | `PG05_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PG-05 |
+| `GOV-REV-018` | `Pilot_Execution_Report_GovOps.md` | `REV` | `accepted` | `1.0` | PAC-2 Governance |
+| `GOV-REV-019` | `PG05_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-05 |
+| `GOV-REF-008` | `PG05_Versioning_Framework_Design.md` | `REF` | `accepted` | `1.0` | PG-05 |
 | `GOV-REC-007` | `Governance_Acceptance_PG02.md` | `REC` | `accepted` | `1.0` | PG-02 |
 | `GOV-REC-008` | `Governance_Acceptance_PAC2_Standards.md` | `REC` | `accepted` | `1.0` | PAC-2 Standards |
 | `GOV-REV-010` | `PAC2_Standards_Assessment.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
@@ -174,14 +184,14 @@ GOV-GUIDE-007 (GS-05) ─┘  GOV-REV-010 (PAC-2 Standards Assessment)
 
 | Metric | Value |
 |---|---|
-| Total objects | 50 |
-| Accepted | 47 |
+| Total objects | 60 |
+| Accepted | 57 |
 | Superseded | 2 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
-| Objects with `primary_source` | 12 |
+| Objects with `primary_source` | 13 |
 | Objects with `depends_on` | 1 (references 6 targets) |
-| Objects with `part_of` | 8 |
+| Objects with `part_of` | 15 |
 | PAC-1 frozen objects | 4 (GOV-GOV-002, GOV-CHARTER-001, GOV-GOV-001, GOV-DEC-002) |
 
 ---
