@@ -93,6 +93,7 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REV-008` | `PG02_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-009` | `PG02_Validation_Report.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REC-007` | `Governance_Acceptance_PG02.md` | `REC` | `accepted` | `1.0` | PG-02 |
+| `GOV-REC-008` | `Governance_Acceptance_PAC2_Standards.md` | `REC` | `accepted` | `1.0` | PAC-2 Standards |
 | `GOV-REV-010` | `PAC2_Standards_Assessment.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
 | `GOV-REV-011` | `PAC2_Standards_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
 | `GOV-REV-012` | `PAC2_Standards_Design_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
@@ -173,8 +174,8 @@ GOV-GUIDE-007 (GS-05) ─┘  GOV-REV-010 (PAC-2 Standards Assessment)
 
 | Metric | Value |
 |---|---|
-| Total objects | 49 |
-| Accepted | 46 |
+| Total objects | 50 |
+| Accepted | 47 |
 | Superseded | 2 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
