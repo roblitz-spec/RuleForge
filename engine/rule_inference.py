@@ -9,11 +9,18 @@ Algorithm: combinatorial search over consensus candidates.
   2. Intersect across all pairs to find consensus candidates.
   3. Search 1-step, 2-step, and 3-step combinations.
   4. Return the first valid pipeline.
+
+Public API:
+  - infer_steps(pairs) → list[RuleStep] — low-level, bare steps
+  - infer_rule(pairs, name) → InferredRule | None — M10: full model
 """
 from __future__ import annotations
 
 from difflib import SequenceMatcher
+from uuid import uuid4
 
+from models.inferred_rule import InferredRule
+from models.rule import Rule
 from models.rule_step import RuleStep
 
 _MAX_DEPTH = 3
@@ -227,6 +234,36 @@ def _apply_step(text: str, step: RuleStep) -> str:
         return text[:at_idx] + insert_text + text[at_idx:]
 
     return text
+
+
+def infer_rule(
+    pairs: list[tuple[str, str]],
+    name: str = "Inferred Rule",
+) -> InferredRule | None:
+    """Derive a complete InferredRule from example pairs.
+
+    Args:
+        pairs: List of (original_string, desired_output) examples.
+        name: Human-readable name for the inferred rule.
+
+    Returns:
+        InferredRule if inference succeeds, None if no transformation
+        is needed or inference fails.
+    """
+    steps = infer_steps(pairs)
+    if not steps:
+        return None
+
+    rule = Rule(
+        id=str(uuid4()),
+        name=name,
+        description=f"Inferred from {len(pairs)} example(s)",
+        steps=steps,
+    )
+    return InferredRule(
+        rule=rule,
+        source_examples=list(pairs),
+    )
 
 
 def validate_steps(pairs: list[tuple[str, str]], steps: list[RuleStep]) -> bool:
