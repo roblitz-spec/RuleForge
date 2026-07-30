@@ -1,8 +1,8 @@
-# Governance Object Registry v1.0
+# Governance Object Registry v1.2
 
 | id | type | status | version | date |
 |---|---|---|---|---|
-| `GOV-REF-006` | `REF` | `accepted` | `1.0` | `2026-07-29` |
+| `GOV-REF-006` | `REF` | `accepted` | `1.2` | `2026-07-29` |
 
 | source |
 |---|
@@ -38,6 +38,12 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-PLAN-001` | `PAC2_Project_Charter.md` | `PLAN` | `accepted` | `1.0` | `GOV-REC-001` |
 | `GOV-REF-006` | `Governance_Object_Registry.md` | `REF` | `accepted` | `1.0` | `GOV-REF-003` |
 | `GOV-REF-003` | `Governance_Object_Index_Framework.md` | `REF` | `accepted` | `1.0` | `GOV-REV-006` |
+| `GOV-REF-007` | `Governance_Standards_Framework.md` | `REF` | `accepted` | `1.0` | `GOV-REV-010` |
+| `GOV-GUIDE-003` | `Governance_Standard_PAC2_Lifecycle.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
+| `GOV-GUIDE-004` | `Governance_Standard_Document_Structure.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
+| `GOV-GUIDE-005` | `Governance_Standard_Review.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
+| `GOV-GUIDE-006` | `Governance_Standard_Naming.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
+| `GOV-GUIDE-007` | `Governance_Standard_Traceability.md` | `GUIDE` | `accepted` | `1.0` | `GOV-REF-007` |
 
 ### AI Governance Documents (`docs/AI/`)
 
@@ -87,6 +93,9 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REV-008` | `PG02_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-009` | `PG02_Validation_Report.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REC-007` | `Governance_Acceptance_PG02.md` | `REC` | `accepted` | `1.0` | PG-02 |
+| `GOV-REV-010` | `PAC2_Standards_Assessment.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
+| `GOV-REV-011` | `PAC2_Standards_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
+| `GOV-REV-012` | `PAC2_Standards_Design_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
 
 ### Deprecated Documents
 
@@ -129,6 +138,12 @@ GOV-GOV-002 (Governance Resolution)
 | `GOV-STATUS-002` | `GOV-CONST-002` | `depends_on` |
 | `GOV-STATUS-002` | `GOV-REF-002` | `depends_on` |
 | `GOV-STATUS-002` | `GOV-PLAN-002` | `depends_on` |
+| `GOV-GUIDE-003` | `GOV-REF-007` | `primary_source` |
+| `GOV-GUIDE-004` | `GOV-REF-007` | `primary_source` |
+| `GOV-GUIDE-005` | `GOV-REF-007` | `primary_source` |
+| `GOV-GUIDE-006` | `GOV-REF-007` | `primary_source` |
+| `GOV-GUIDE-007` | `GOV-REF-007` | `primary_source` |
+| `GOV-REF-007` | `GOV-REV-010` | `primary_source` |
 
 ### Dependency Graph
 
@@ -142,21 +157,30 @@ GOV-STATUS-002 (AI_HANDOFF)
     └── GOV-PLAN-002 (NEXT_MILESTONE)        [depends_on]
 ```
 
+### Standards Authority Chain
+
+```
+GOV-GUIDE-003 (GS-01) ─┐
+GOV-GUIDE-004 (GS-02) ─┤
+GOV-GUIDE-005 (GS-03) ─┼── primary_source → GOV-REF-007 (Standards Framework)
+GOV-GUIDE-006 (GS-04) ─┤       ↓ primary_source
+GOV-GUIDE-007 (GS-05) ─┘  GOV-REV-010 (PAC-2 Standards Assessment)
+```
+
 ---
 
 ## Statistics
 
 | Metric | Value |
 |---|---|
-| Total objects | 40 |
-| Accepted | 37 |
+| Total objects | 49 |
+| Accepted | 46 |
 | Superseded | 2 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
-| Objects with `primary_source` | 5 |
+| Objects with `primary_source` | 12 |
 | Objects with `depends_on` | 1 (references 6 targets) |
-| Objects with no relationships | 27 |
-| Objects with `part_of` | 4 |
+| Objects with `part_of` | 8 |
 | PAC-1 frozen objects | 4 (GOV-GOV-002, GOV-CHARTER-001, GOV-GOV-001, GOV-DEC-002) |
 
 ---
@@ -165,6 +189,8 @@ GOV-STATUS-002 (AI_HANDOFF)
 
 | Version | Date | Change |
 |---|---|---|
+| `1.2` | 2026-07-29 | Added PAC-2 Standards Layer: 6 standards docs + 3 review work products |
+| `1.1` | 2026-07-29 | Added PG-02 Acceptance record (GOV-REC-007) + Validation Report (GOV-REV-009) |
 | `1.0` | 2026-07-29 | Initial registry: 35 objects, 11 types, authority chain + dependency graph |
 
 ---
@@ -179,4 +205,4 @@ This registry is updated when:
 
 **Do not edit this registry to change a document's content.** The registry reflects document state; it does not define it. If a document's status, version, or relationships are incorrect, update the document first, then update the registry.
 
-This document itself is a governance object: `GOV-REF-006`, type `REF`, status `accepted`, version `1.0`.
+This document itself is a governance object: `GOV-REF-006`, type `REF`, status `accepted`, version `1.2`.
