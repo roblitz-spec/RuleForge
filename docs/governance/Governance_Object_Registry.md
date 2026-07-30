@@ -101,9 +101,12 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REV-017` | `PG05_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PG-05 |
 | `GOV-REV-018` | `Pilot_Execution_Report_GovOps.md` | `REV` | `accepted` | `1.0` | PAC-2 Governance |
 | `GOV-REV-019` | `PG05_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-05 |
+| `GOV-REV-020` | `PG05_Implementation_Report.md` | `REV` | `accepted` | `1.0` | PG-05 |
+| `GOV-REV-021` | `PG05_Validation_Report.md` | `REV` | `accepted` | `1.0` | PG-05 |
 | `GOV-REF-008` | `PG05_Versioning_Framework_Design.md` | `REF` | `accepted` | `1.0` | PG-05 |
 | `GOV-REC-007` | `Governance_Acceptance_PG02.md` | `REC` | `accepted` | `1.0` | PG-02 |
 | `GOV-REC-008` | `Governance_Acceptance_PAC2_Standards.md` | `REC` | `accepted` | `1.0` | PAC-2 Standards |
+| `GOV-REC-009` | `Governance_Acceptance_PG05.md` | `REC` | `accepted` | `1.0` | PG-05 |
 | `GOV-REV-010` | `PAC2_Standards_Assessment.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
 | `GOV-REV-011` | `PAC2_Standards_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
 | `GOV-REV-012` | `PAC2_Standards_Design_Review.md` | `REV` | `accepted` | `1.0` | PAC-2 Standards |
@@ -184,14 +187,14 @@ GOV-GUIDE-007 (GS-05) ─┘  GOV-REV-010 (PAC-2 Standards Assessment)
 
 | Metric | Value |
 |---|---|
-| Total objects | 60 |
-| Accepted | 57 |
+| Total objects | 63 |
+| Accepted | 60 |
 | Superseded | 2 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
 | Objects with `primary_source` | 13 |
 | Objects with `depends_on` | 1 (references 6 targets) |
-| Objects with `part_of` | 15 |
+| Objects with `part_of` | 18 |
 | PAC-1 frozen objects | 4 (GOV-GOV-002, GOV-CHARTER-001, GOV-GOV-001, GOV-DEC-002) |
 
 ---
