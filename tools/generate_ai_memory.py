@@ -17,7 +17,7 @@ DOCS = ROOT / "docs" / "AI"
 OUTPUT = DOCS / "AI_MEMORY_PACK.md"
 
 MEMORY_VERSION = "v2.0"
-PROJECT = "ResourceHub"
+PROJECT = "RuleForge"
 
 SOURCE_FILES = [
     "PROJECT_BRIEF.md",

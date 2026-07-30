@@ -2,7 +2,7 @@
 
 ## 1. Background
 
-ResourceHub supports batch file and directory renaming on Windows. On Windows, the NTFS filesystem is case-insensitive by default: `NO.TEST001.txt` and `No.TEST001.txt` refer to the same file.
+RuleForge supports batch file and directory renaming on Windows. On Windows, the NTFS filesystem is case-insensitive by default: `NO.TEST001.txt` and `No.TEST001.txt` refer to the same file.
 
 A user reported that after applying a simple case-changing rule (`NO.` → `No.`), the preview correctly showed `No.TEST001.txt`, but clicking "Rename" produced:
 

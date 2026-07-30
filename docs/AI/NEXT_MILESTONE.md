@@ -2,7 +2,7 @@
 
 ## Product Direction
 
-AI-assisted Rule IDE. Core value: Example → Rule Inference → Rule → Test/Preview → Execute → Reuse. ResourceHub is the origin; batch file rename is the initial adapter.
+RuleForge is an AI-assisted Rule IDE. Core value: Example → Rule Inference → Rule → Test/Preview → Execute → Reuse. File renaming is the initial adapter — not the product identity.
 
 ## Completed Milestones
 

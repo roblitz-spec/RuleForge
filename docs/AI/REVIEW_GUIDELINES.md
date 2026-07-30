@@ -1,4 +1,4 @@
-# ResourceHub — Review Guidelines
+# RuleForge — Review Guidelines
 
 > For the Reviewer (ChatGPT / User) when evaluating AI Developer output.
 

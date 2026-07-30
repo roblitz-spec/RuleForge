@@ -1,4 +1,4 @@
-# ResourceHub — AI Onboarding & Memory Governance
+# RuleForge — AI Onboarding & Memory Governance
 
 **AI Memory Version**: v2.0
 

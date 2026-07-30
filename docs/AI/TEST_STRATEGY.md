@@ -1,4 +1,4 @@
-# ResourceHub — Test Strategy
+# RuleForge — Test Strategy
 
 ## Test Pyramid
 

@@ -1,4 +1,4 @@
-# ResourceHub — Development Status
+# RuleForge — Development Status
 
 **Date**: 2026-07
 **Branch**: `m10-phase3a-rule-analysis`

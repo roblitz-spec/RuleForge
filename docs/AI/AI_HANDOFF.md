@@ -1,7 +1,9 @@
-# ResourceHub — AI Handoff
+# RuleForge — AI Handoff
 
 > For new AI sessions. Read this first to restore context.
 > **AI Memory v2.0** — see `README_AI.md` for governance.
+>
+> **Origin**: RuleForge originated from ResourceHub, a batch resource renaming project. File renaming is the initial adapter/use case — not the product identity.
 
 ## Current State
 

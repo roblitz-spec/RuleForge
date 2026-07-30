@@ -1,4 +1,4 @@
-# ResourceHub — Architecture
+# RuleForge — Architecture
 
 ## Pipeline
 

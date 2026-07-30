@@ -1,4 +1,4 @@
-# ResourceHub — AI Changelog
+# RuleForge — AI Changelog
 
 > For architecture decisions behind these changes, see [`DECISION_LOG.md`](DECISION_LOG.md).
 

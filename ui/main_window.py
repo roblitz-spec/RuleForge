@@ -55,7 +55,7 @@ def _utime() -> float:
 
 
 class MainWindow(QMainWindow):
-    """ResourceHub 主窗口。"""
+    """RuleForge 主窗口。"""
 
     def __init__(self) -> None:
         super().__init__()
@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
             Path.home() / ".resourcehub" / "presets.json"
         )
 
-        self.setWindowTitle("ResourceHub v0.1")
+        self.setWindowTitle("RuleForge v0.1")
         self.resize(1200, 700)
         self.setMinimumSize(1000, 600)
 

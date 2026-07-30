@@ -1,8 +1,10 @@
-# ResourceHub — Current Status
+# RuleForge — Current Status
+
+> RuleForge originated from ResourceHub, a batch renaming tool. It is now an AI-assisted Rule IDE.
 
 **Branch**: `m10-phase3a-rule-analysis`
 **Date**: 2026-07-30
-**Active Baseline**: M9 (M9-complete)
+**Active Baseline**: M10 Phase 2 (RuleSession)
 
 ## Test Status
 

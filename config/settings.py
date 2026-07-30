@@ -4,8 +4,8 @@ from PySide6.QtCore import QSettings
 
 from models.rename_policy import RenamePolicy
 
-_ORGANIZATION = "ResourceHub"
-_APPLICATION = "ResourceHub"
+_ORGANIZATION = "RuleForge"
+_APPLICATION = "RuleForge"
 _KEY_POLICY = "rename/policy"
 _KEY_LAST_RULE = "rule/last_selected"
 _KEY_LAST_PRESET = "preset/last_selected"

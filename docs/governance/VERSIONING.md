@@ -1,4 +1,4 @@
-# ResourceHub Versioning Policy — VERSIONING.md
+# RuleForge Versioning Policy — VERSIONING.md
 
 | id | type | status | version | date |
 |---|---|---|---|---|
@@ -10,13 +10,13 @@
 
 ---
 
-**Authoritative Source**: This document is the single versioning policy for the ResourceHub project. It resolves the version identity crisis identified in PG-05 WP-01.
+**Authoritative Source**: This document is the single versioning policy for the RuleForge project. It resolves the version identity crisis identified in PG-05 WP-01.
 
 ---
 
 ## 1. Version Domains
 
-The ResourceHub project uses 5 independent version domains. Each domain has a single scheme, a single source of truth, and clear increment rules.
+The RuleForge project uses 5 independent version domains. Each domain has a single scheme, a single source of truth, and clear increment rules.
 
 ### 1.1 Milestone (`M{N}`)
 
@@ -46,7 +46,7 @@ Tracks governance document revisions. Each governance artifact carries its own v
 
 ### 1.3 Application Version (`v{N}.{n}`)
 
-Display version for the ResourceHub application.
+Display version for the RuleForge application.
 
 | Attribute | Value |
 |---|---|

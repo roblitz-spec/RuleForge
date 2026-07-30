@@ -1,4 +1,4 @@
-# ResourceHub — Decision Log (ADR)
+# RuleForge — Decision Log (ADR)
 
 ## ADR-001: Prefix / Suffix Design
 
@@ -76,3 +76,21 @@
 - **Reason**: Single product identity eliminates roadmap ambiguity (UD-01, UD-02, PG-01). The existing `editor/` package (EditSession, DomainValidator, 382 lines) is the Rule IDE skeleton — build on it rather than maintain parallel roadmaps.
 - **Alternatives Considered**: Keep "ResourceHub" name with batch rename as primary identity. Rejected — contradicts the evolution already underway (Rule Engine, EditSession, RuleAnalysis, RuleInference).
 - **Naming**: Recommended "RuleForge". Mechanical rename deferred to avoid disrupting development.
+
+## ADR-010: Adopt RuleForge as the Official Project Identity
+
+- **Milestone**: M10
+- **Status**: Accepted
+- **Decision**: Adopt **RuleForge** as the official product and project identity. ResourceHub is the historical origin — preserved as the origin story, not erased.
+- **Context**: The project evolved from ResourceHub (batch file renamer) into an AI-assisted Rule IDE. ADR-009 established the product direction; this ADR completes the identity convergence by formalizing the name.
+- **Consequences**:
+  1. All living documentation uses "RuleForge" as the product name.
+  2. Architecture terminology uses RuleForge, Rule, RuleInference, RuleSession, RuleRuntime, Adapters.
+  3. Window title: `RuleForge v0.1`.
+  4. Configuration: `_ORGANIZATION = "RuleForge"`, `_APPLICATION = "RuleForge"`.
+  5. Build artifact: `RuleForge.exe`.
+  6. ResourceHub remains in historical documents (PAC reviews, governance assessments, git history, origin story).
+  7. PyPI distribution naming is a separate decision — `ruleforge` is occupied on PyPI.
+  8. Repository and import namespace not renamed — no functional impact.
+- **Validation**: Full regression suite unchanged. No behavioral changes.
+- **Alternatives Considered**: Keep "ResourceHub" indefinitely. Rejected — contradicts ADR-009 product direction.

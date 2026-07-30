@@ -10,8 +10,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-DIST = ROOT / "dist" / "ResourceHub"
-BUILD = ROOT / "build" / "ResourceHub"
+DIST = ROOT / "dist" / "RuleForge"
+BUILD = ROOT / "build" / "RuleForge"
 SPEC = ROOT / "build.spec"
 
 

@@ -1,4 +1,4 @@
-# ResourceHub 构建指南
+# RuleForge 构建指南
 
 ## 环境要求
 
@@ -20,8 +20,8 @@ python scripts/build.py
 构建成功后输出：
 
 ```
-dist/ResourceHub/ResourceHub.exe    (Windows)
-dist/ResourceHub/ResourceHub        (Linux/macOS)
+dist/RuleForge/RuleForge.exe    (Windows)
+dist/RuleForge/RuleForge        (Linux/macOS)
 ```
 
 ## 手动构建
@@ -32,10 +32,10 @@ pyinstaller build.spec
 
 ## 运行
 
-直接双击 `dist/ResourceHub/ResourceHub.exe`（Windows），或终端执行：
+直接双击 `dist/RuleForge/RuleForge.exe`（Windows），或终端执行：
 
 ```bash
-dist/ResourceHub/ResourceHub
+dist/RuleForge/RuleForge
 ```
 
 ## 包含资源

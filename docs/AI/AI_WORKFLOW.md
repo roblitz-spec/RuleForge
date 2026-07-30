@@ -1,4 +1,4 @@
-# ResourceHub — AI-Assisted Development Workflow
+# RuleForge — AI-Assisted Development Workflow
 
 ---
 

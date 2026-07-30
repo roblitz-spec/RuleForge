@@ -73,7 +73,7 @@ class RegexAssistant(QDialog):
     def __init__(self, on_insert=None, parent=None):
         super().__init__(parent)
         self._on_insert = on_insert
-        self._settings = QSettings("ResourceHub", "ResourceHub")
+        self._settings = QSettings("RuleForge", "RuleForge")
 
         self.setWindowTitle("Regex Assistant")
         self.setMinimumSize(520, 440)

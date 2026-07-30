@@ -1,4 +1,4 @@
-# ResourceHub — Known Limitations
+# RuleForge — Known Limitations
 
 > Update this file when a limitation is resolved.
 

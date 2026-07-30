@@ -1,10 +1,14 @@
 # RuleForge — Project Brief
 
-> **Product Direction**: AI-assisted Rule IDE. ResourceHub was the origin — batch file rename is the initial adapter/use case. The core value proposition is: Example → Rule Inference → Rule → Test/Preview → Execute → Reuse.
+> RuleForge is an AI-assisted Rule IDE. It learns reusable transformation rules from examples and provides tools to inspect, edit, validate, preview, and execute those rules.
+
+## Origin
+
+RuleForge originated from **ResourceHub**, a batch resource renaming project. During development, the project evolved from task-specific automation toward example-driven rule inference and ultimately became an AI-assisted Rule IDE. File renaming is the initial adapter/use case — not the product identity.
 
 ## What
 
-RuleForge is an AI-assisted Rule IDE. Given transformation examples (original → desired), it infers candidate rules, lets users refine and test them, and executes transformations reliably. Initial adapter: batch file rename. Built with Python 3.12+ and PySide6.
+RuleForge learns reusable transformation rules from examples. Given original → desired pairs, it infers candidate rules, lets users refine and test them, and executes transformations reliably. Built with Python 3.12+ and PySide6.
 
 ## Product Hierarchy
 

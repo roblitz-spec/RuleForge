@@ -1,4 +1,8 @@
-# ResourceHub
+# RuleForge
+
+> **AI-assisted Rule IDE** — learns reusable transformation rules from examples.
+
+**Origin**: RuleForge originated from ResourceHub, a batch resource renaming project. During development, the project evolved from task-specific automation toward example-driven rule inference and ultimately became an AI-assisted Rule IDE. File renaming is the initial adapter/use case.
 
 Windows 桌面批量重命名工具。
 
