@@ -85,6 +85,8 @@ Central registry of all governance objects in the ResourceHub repository. This d
 | `GOV-REV-006` | `PG02_Current_State_Assessment.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-007` | `PG02_Assessment_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
 | `GOV-REV-008` | `PG02_Design_Review.md` | `REV` | `accepted` | `1.0` | PG-02 |
+| `GOV-REV-009` | `PG02_Validation_Report.md` | `REV` | `accepted` | `1.0` | PG-02 |
+| `GOV-REC-007` | `Governance_Acceptance_PG02.md` | `REC` | `accepted` | `1.0` | PG-02 |
 
 ### Deprecated Documents
 
@@ -146,8 +148,8 @@ GOV-STATUS-002 (AI_HANDOFF)
 
 | Metric | Value |
 |---|---|
-| Total objects | 38 |
-| Accepted | 35 |
+| Total objects | 40 |
+| Accepted | 37 |
 | Superseded | 2 |
 | Deprecated | 1 |
 | Types in use | 11/11 |
