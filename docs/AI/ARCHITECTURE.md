@@ -1,5 +1,18 @@
 # RuleForge — Architecture
 
+## RuleWorkflow (M10.5) — Orchestration Layer
+
+```
+infer()        → RuleInference.infer_rule()
+open_session() → RuleSession.open()
+inspect()      → RuleInspection.inspect()
+execute()      → preview_pipeline.preview_rule()
+run()          → full pipeline (infer → inspect → validate → preview → commit → finalize → execute)
+```
+
+RuleWorkflow composes existing capabilities without owning state.
+RuleSession remains the authoritative mutable object.
+
 ## Pipeline
 
 ```

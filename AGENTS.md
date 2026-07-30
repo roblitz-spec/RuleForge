@@ -12,12 +12,13 @@
 | `M6-complete` | Rule Duplication（复制规则），384 tests |
 | `M7-complete` | Architecture Consolidation（架构整合），398 tests |
 | `M8-complete` | Rule Presets（规则预设），447 tests |
+| `M9-complete` | RuleInference Engine，30 tests |
+| `M10-complete` | Rule Model, Session, Workflow，70 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
 | `M15-complete` | AddSuffix Rule 完成，AI Memory 系统建立 |
 | `M16-complete` | AI Memory v2.0 Governance，Selection Features |
-| `M9-complete` | RuleInference 引擎，Example → Rule 推断，30 tests |
 
 ## RuleStep 类型总览
 
