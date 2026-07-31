@@ -20,7 +20,6 @@ from engine.preview_pipeline import preview_rule
 from engine.rule_inference import infer_rule
 from engine.rule_inspector import RuleInspection
 from engine.rule_session import RuleSession
-from engine.string_transform_engine import StringTransformEngine
 from models.inferred_rule import InferredRule
 from models.rule import Rule
 from models.session_validation import SessionValidationResult
@@ -104,10 +103,9 @@ class RuleWorkflow:
 
     @staticmethod
     def execute(rule: Rule, inputs: list[str]) -> list[str]:
-        """Apply a committed Rule to string inputs.
+        """Apply a committed Rule to string inputs (backward compat).
 
-        Returns the transformed outputs.  This is the headless
-        execution path — no filesystem access, no adapters.
+        Returns transformed outputs as a plain list.
         """
         result = preview_rule(rule, inputs)
         return [e.output_text for e in result.entries]
@@ -123,13 +121,43 @@ class RuleWorkflow:
         Args:
             rule: The committed Rule to execute.
             targets: String inputs or file paths.
-            engine: ExecutionEngine to use (default: StringTransformEngine).
+            engine: ExecutionEngine instance.  If None, resolved via
+                    the default EngineRegistry using engine_name.
 
         Returns:
             ExecutionResult with outputs, diagnostics, and timing.
         """
-        ctx = ExecutionContext(rule=rule, targets=targets)
+        from engine.engine_registry import EngineRegistry
+        from engine.string_transform_engine import StringTransformEngine
+
         eng = engine or StringTransformEngine()
+        ctx = ExecutionContext(rule=rule, targets=targets)
+        return ExecutionPipeline.run(ctx, eng)
+
+    @staticmethod
+    def execute_named(
+        rule: Rule,
+        targets: list[str],
+        engine_name: str = "string",
+        registry: EngineRegistry | None = None,
+    ) -> ExecutionResult:
+        """Execute a committed Rule using a named engine from the registry.
+
+        Args:
+            rule: The committed Rule to execute.
+            targets: String inputs or file paths.
+            engine_name: Name registered in the EngineRegistry
+                         (default: "string").
+            registry: EngineRegistry (default: EngineRegistry.default()).
+
+        Returns:
+            ExecutionResult with outputs, diagnostics, and timing.
+        """
+        from engine.engine_registry import EngineRegistry
+
+        reg = registry or EngineRegistry.default()
+        eng = reg.create(engine_name)
+        ctx = ExecutionContext(rule=rule, targets=targets)
         return ExecutionPipeline.run(ctx, eng)
 
     # ── Full pipeline ───────────────────────────────────────────

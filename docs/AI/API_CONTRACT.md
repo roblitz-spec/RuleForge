@@ -150,8 +150,10 @@ def transition(current: SessionState, target: SessionState) -> SessionState: ...
 |---|---|---|
 | `InvalidStateTransition` | `models.session_state` | Invalid state transition attempted |
 | `RuntimeError` | builtins | Session already open, session not open |
+| `EngineNotFoundError` | `engine.engine_registry` | Unknown engine name requested |
+| `DuplicateEngineError` | `engine.engine_registry` | Engine name already registered |
 
-**Contract**: Only these two exception types are part of the public API.
+**Contract**: These four exception types are part of the public API.
 Internal validation issues and implementation errors are reported
 through `WorkflowResult.errors` or `SessionValidationResult`, not
 through exceptions.
@@ -170,6 +172,7 @@ through exceptions.
 | `InspectionExecutionEngine` | `engine.inspection_execution_engine` | Execution analysis (summary, metadata, scope estimation) |
 | `FilesystemAdapter` | `engine.filesystem_adapter` | Abstract filesystem (testing, dry run) |
 | `RealFilesystemAdapter` | `engine.filesystem_adapter` | Production pathlib adapter |
+| `EngineRegistry` | `engine.engine_registry` | Named engine discovery and selection |
 
 #### ExecutionContext
 
@@ -242,6 +245,47 @@ Journal: `result.diagnostics["operations_journal"]` is a list of
 | `RenameExecutionEngine` | **Yes** | Yes (fatal) | journal, conflict count |
 | `DryRunExecutionEngine` | No | Yes (fatal) | journal, would_rename, would_skip |
 | `InspectionExecutionEngine` | No | Yes (non-fatal) | journal, stems, scope, metadata |
+
+#### EngineRegistry
+
+```python
+class EngineRegistry:
+    @classmethod
+    def default(cls) -> EngineRegistry: ...
+    def register(self, name: str, engine_cls: Type[ExecutionEngine]) -> None: ...
+    def replace(self, name: str, engine_cls: Type[ExecutionEngine]) -> None: ...
+    def create(self, name: str) -> ExecutionEngine: ...
+    def names(self) -> list[str]: ...
+    def is_registered(self, name: str) -> bool: ...
+```
+
+Built-in engines: `"string"`, `"rename"`, `"dry-run"`, `"inspect"`.
+`create()` produces a new instance per call — no shared mutable state.
+`register()` raises `DuplicateEngineError` on duplicate names.
+
+#### RuleWorkflow execution methods
+
+```python
+class RuleWorkflow:
+    # Direct engine injection (M11-A, backward compatible)
+    @staticmethod
+    def execute_with_engine(
+        rule: Rule, targets: list[str],
+        engine: ExecutionEngine | None = None,
+    ) -> ExecutionResult: ...
+
+    # Named engine resolution via registry (M11-D)
+    @staticmethod
+    def execute_named(
+        rule: Rule, targets: list[str],
+        engine_name: str = "string",
+        registry: EngineRegistry | None = None,
+    ) -> ExecutionResult: ...
+
+    # Plain string output (backward compatible, pre-M11)
+    @staticmethod
+    def execute(rule: Rule, inputs: list[str]) -> list[str]: ...
+```
 
 ### CLI
 
