@@ -1,0 +1,28 @@
+name: Test
+
+on:
+  push:
+    branches: [m11-execution-platform]
+  pull_request:
+    branches: [m11-execution-platform]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libegl1 libxkbcommon0 libxcb-cursor0
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: python -m pytest tests/ -v
