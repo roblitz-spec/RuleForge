@@ -156,6 +156,55 @@ Internal validation issues and implementation errors are reported
 through `WorkflowResult.errors` or `SessionValidationResult`, not
 through exceptions.
 
+### Execution Pipeline
+
+| Type | Module | Description |
+|---|---|---|
+| `ExecutionContext` | `engine.execution_context` | Immutable execution request (rule + targets + options) |
+| `ExecutionResult` | `engine.execution_result` | Stable execution outcome (outputs, diagnostics, timing) |
+| `ExecutionEngine` | `engine.execution_engine` | Abstract engine interface (prepare/execute/cleanup) |
+| `ExecutionPipeline` | `engine.execution_pipeline` | Coordinates context → engine → result |
+| `StringTransformEngine` | `engine.string_transform_engine` | Default headless string transform engine |
+
+#### ExecutionContext
+
+```python
+@dataclass(frozen=True)
+class ExecutionContext:
+    rule: Rule
+    targets: list[str]      # string inputs or file paths
+    options: dict[str, object]  # runtime configuration
+    target_count: int       # derived: len(targets)
+```
+
+#### ExecutionResult
+
+```python
+@dataclass
+class ExecutionResult:
+    success: bool
+    outputs: list[str]
+    actions_executed: int
+    actions_skipped: int
+    errors: list[str]
+    diagnostics: dict[str, object]  # engine-specific metadata
+    duration_ms: float | None       # wall-clock execution time
+    total_actions: int              # derived: executed + skipped
+```
+
+#### RuleWorkflow integration
+
+```python
+class RuleWorkflow:
+    @staticmethod
+    def execute_with_engine(
+        rule: Rule, targets: list[str],
+        engine: ExecutionEngine | None = None,
+    ) -> ExecutionResult: ...
+```
+
+`engine=None` defaults to `StringTransformEngine`.
+
 ### CLI
 
 | Command | Contract |

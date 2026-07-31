@@ -12,10 +12,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from engine.execution_context import ExecutionContext
+from engine.execution_engine import ExecutionEngine
+from engine.execution_pipeline import ExecutionPipeline
+from engine.execution_result import ExecutionResult
 from engine.preview_pipeline import preview_rule
 from engine.rule_inference import infer_rule
 from engine.rule_inspector import RuleInspection
 from engine.rule_session import RuleSession
+from engine.string_transform_engine import StringTransformEngine
 from models.inferred_rule import InferredRule
 from models.rule import Rule
 from models.session_validation import SessionValidationResult
@@ -106,6 +111,26 @@ class RuleWorkflow:
         """
         result = preview_rule(rule, inputs)
         return [e.output_text for e in result.entries]
+
+    @staticmethod
+    def execute_with_engine(
+        rule: Rule,
+        targets: list[str],
+        engine: ExecutionEngine | None = None,
+    ) -> ExecutionResult:
+        """Execute a committed Rule through the ExecutionPipeline.
+
+        Args:
+            rule: The committed Rule to execute.
+            targets: String inputs or file paths.
+            engine: ExecutionEngine to use (default: StringTransformEngine).
+
+        Returns:
+            ExecutionResult with outputs, diagnostics, and timing.
+        """
+        ctx = ExecutionContext(rule=rule, targets=targets)
+        eng = engine or StringTransformEngine()
+        return ExecutionPipeline.run(ctx, eng)
 
     # ── Full pipeline ───────────────────────────────────────────
 
