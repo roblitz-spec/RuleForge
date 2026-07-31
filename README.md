@@ -1,10 +1,21 @@
 # RuleForge
 
-> **AI-assisted Rule IDE** — learns reusable transformation rules from examples.
+> **AI-assisted Rule IDE & Rule Execution Platform** — learns reusable transformation rules from examples, executes them through a unified execution architecture.
 
 **Origin**: RuleForge originated from ResourceHub, a batch resource renaming project. During development, the project evolved from task-specific automation toward example-driven rule inference and ultimately became an AI-assisted Rule IDE. File renaming is the initial adapter/use case.
 
-Windows 桌面批量重命名工具。
+## 执行平台
+
+RuleForge 提供统一执行架构（Execution Platform v1），支持多种执行引擎：
+
+| 引擎 | 类型 | 说明 |
+|---|---|---|
+| `string` | 字符转换 | 无状态字符串转换 |
+| `rename` | 文件重命名 | 文件系统重命名操作 |
+| `dry-run` | 模拟执行 | 验证与冲突检测，不修改文件系统 |
+| `inspect` | 执行分析 | 计划摘要、元数据、范围预估 |
+
+详见 [`docs/AI/EXECUTION_PLATFORM.md`](docs/AI/EXECUTION_PLATFORM.md)。
 
 ## 技术栈
 
