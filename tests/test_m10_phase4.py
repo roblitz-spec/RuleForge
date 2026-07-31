@@ -38,7 +38,7 @@ class TestTransitionMap:
         assert can_transition(SessionState.INFERRED, SessionState.EDITING)
         assert can_transition(SessionState.INFERRED, SessionState.VALIDATED)
         assert can_transition(SessionState.INFERRED, SessionState.PREVIEW_READY)
-        assert can_transition(SessionState.INFERRED, SessionState.COMMITTED)
+        assert not can_transition(SessionState.INFERRED, SessionState.COMMITTED)
         assert not can_transition(SessionState.INFERRED, SessionState.EXECUTED)
         assert not can_transition(SessionState.INFERRED, SessionState.NEW)
 
@@ -50,7 +50,7 @@ class TestTransitionMap:
     def test_validated_reachable_states(self) -> None:
         assert can_transition(SessionState.VALIDATED, SessionState.EDITING)
         assert can_transition(SessionState.VALIDATED, SessionState.PREVIEW_READY)
-        assert not can_transition(SessionState.VALIDATED, SessionState.COMMITTED)
+        assert can_transition(SessionState.VALIDATED, SessionState.COMMITTED)
 
     def test_preview_ready_reachable_states(self) -> None:
         assert can_transition(SessionState.PREVIEW_READY, SessionState.EDITING)

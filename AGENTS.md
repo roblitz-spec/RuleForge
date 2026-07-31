@@ -13,7 +13,7 @@
 | `M7-complete` | Architecture Consolidation（架构整合），398 tests |
 | `M8-complete` | Rule Presets（规则预设），447 tests |
 | `M9-complete` | RuleInference Engine，30 tests |
-| `M10-complete` | Rule Model, Session, Workflow，70 tests |
+| `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E Validation，116 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -67,6 +67,23 @@
 - 检测能力：case（4 模式）、trim（3 模式）、replace/remove_text（SequenceMatcher 差分）、add_prefix/add_suffix、insert
 - 多步骤流水线：自动发现组合（如 trim → case、replace → case）
 
+## RuleSession Lifecycle（M10.5-B）
+
+- `models/session_state.py`：`SessionState` 显式状态模型，强制转移验证
+- 状态：`NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → EXECUTED`
+- 无效转移 → `InvalidStateTransition`（带描述信息）
+- 失败操作不推进状态；同状态转移为幂等（无操作）
+- `commit()` 自动调用 `validate()`，验证失败拒绝提交
+- `RuleLifecycle` 保留用于存储成熟度追踪（与 `SessionState` 分离）
+
+## RuleWorkflow（M10.5 + M10.5-C）
+
+- `engine/rule_workflow.py`：薄编排层，组合已有引擎能力
+- `infer()` → `open_session()` → `validate()` → `preview()` → `commit()` → `finalize()` → `execute()`
+- `run()` 完整流水线便捷方法
+- RuleWorkflow 不拥有状态 — RuleSession 是唯一权威可变对象
+- E2E 验证：14 tests 覆盖成功路径、失败路径、状态一致性、产物验证
+
 ## 架构原则
 
 - RuleEngine：纯函数，无状态，通过 `context` 参数传递索引
@@ -74,6 +91,8 @@
 - RenameEngine：仅按 `plan.action` 执行，不重复决策
 - Preview ↔ Rename 共享同一份 RenamePlan
 - RuleInference：纯函数，无状态，组合搜索
+- RuleSession：唯一可变状态所有者，SessionState 强制转移
+- RuleWorkflow：无状态编排层，读取 SessionState 但不写入
 
 ## Context Contract
 

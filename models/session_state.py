@@ -67,7 +67,6 @@ _TRANSITIONS: dict[SessionState, frozenset[SessionState]] = {
         SessionState.EDITING,
         SessionState.VALIDATED,
         SessionState.PREVIEW_READY,
-        SessionState.COMMITTED,
     }),
     SessionState.EDITING: frozenset({
         SessionState.EDITING,
@@ -77,6 +76,7 @@ _TRANSITIONS: dict[SessionState, frozenset[SessionState]] = {
     SessionState.VALIDATED: frozenset({
         SessionState.EDITING,
         SessionState.PREVIEW_READY,
+        SessionState.COMMITTED,
     }),
     SessionState.PREVIEW_READY: frozenset({
         SessionState.EDITING,
@@ -103,8 +103,11 @@ def can_transition(current: SessionState, target: SessionState) -> bool:
 def transition(current: SessionState, target: SessionState) -> SessionState:
     """Perform a validated transition.
 
-    Returns *target* if valid; raises InvalidStateTransition otherwise.
+    Returns *target* if valid.  Same-state transitions are allowed
+    (idempotent no-op).  Raises InvalidStateTransition otherwise.
     """
+    if current == target:
+        return target
     if not can_transition(current, target):
         raise InvalidStateTransition(
             f"Cannot transition from {current.name} to {target.name}"

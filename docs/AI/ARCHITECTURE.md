@@ -24,7 +24,23 @@ NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → E
 - `NEW` only → `INFERRED`; `EXECUTED` is terminal
 - Invalid transitions raise `InvalidStateTransition`
 - Failed operations do not advance state
+- Same-state transitions are idempotent (no-op)
 - `RuleLifecycle` tracks rule maturity separately (storage concern)
+- `commit()` auto-validates — rejected if rule invalid
+
+### E2E Workflow (M10.5-C)
+
+```python
+wf = RuleWorkflow()
+ir = wf.infer([("hello", "HELLO")])
+session = wf.open_session(ir)
+session.edit_step(step_id, "mode", "lower")
+session.validate()
+session.preview()
+session.commit()          # auto-validates before persisting
+session.finalize()
+outputs = wf.execute(session.rule, ["world"])
+```
 
 ## Pipeline
 

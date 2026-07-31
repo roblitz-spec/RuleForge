@@ -203,10 +203,24 @@ class RuleSession:
     def commit(self) -> None:
         """Persist working copy to the original Rule.
 
+        Automatically validates before committing.  Validation failure
+        raises InvalidStateTransition with details — state is not
+        advanced.
+
         Advances state to COMMITTED and RuleLifecycle to TESTED.
         """
+        # State check first — produces InvalidStateTransition for unopened sessions
         if self._inferred_rule is None:
             raise RuntimeError("Session not open")
+        validation = self.validate()
+        if not validation.is_valid:
+            errors = "; ".join(
+                validation.session_errors
+                + [str(i) for i in validation.issues]
+            )
+            raise InvalidStateTransition(
+                f"Commit rejected — validation failed: {errors}"
+            )
         self._edit_session.commit()
         self._inferred_rule.promote_to(RuleLifecycle.TESTED)
         self._advance(SessionState.COMMITTED)
