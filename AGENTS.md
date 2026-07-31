@@ -23,6 +23,7 @@
 | `M11-E-complete` | Execution Observability，28 tests |
 | `M11-complete` | Execution Platform v1，103 tests，743 total——架构基线冻结 |
 | `M12-A-complete` | Batch Execution Foundation，27 tests |
+| `M12-B-complete` | Plugin / Extension Framework，46 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -137,6 +138,19 @@
 - `BatchExecutionEngine`：将 batch 包装为 `ExecutionEngine`（通过 context.options["_batch_definition"] 传递）
 - 反嵌套：`BatchItem.engine_name` 不得为 `"batch"` → `ValueError`
 - `RuleWorkflow.execute_batch()`：薄委托层
+
+## Plugin / Extension Framework (M12-B)
+
+- `plugins/`：独立包，零耦合 engine/
+- `Plugin` (ABC)：生命周期钩子（discover/load/initialize/activate/deactivate/unload），默认 no-op
+- `PluginMetadata` (frozen)：name、version、capabilities、dependencies
+- `PluginCapability` (enum)：RULE_DISCOVERY、VALIDATION、EXECUTION_HOOK、BATCH_HOOK、RESULT_PROCESSING、OUTPUT_EXPORT
+- `PluginContext` (frozen)：只读上下文，含 registry 引用 + opaque data
+- `PluginRegistry`：注册/注销、启用/禁用、激活/停用、capability 查询、依赖校验
+- 生命周期：LOADED → ENABLED → ACTIVE → ENABLED → LOADED
+- 错误隔离：单个插件 `on_activate` 失败不影响其他插件
+- 扩展点定义为契约 — 实际 hook 调用在后续 Milestone 中连接
+- Rollback、Scheduler、Remote Provider 将作为 Plugin 实现，而非核心平台修改
 
 ## Context Contract
 
