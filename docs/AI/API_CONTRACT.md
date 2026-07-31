@@ -1,0 +1,202 @@
+# RuleForge — Public API Contract
+
+> **Version**: 1.0 (M10.5-E freeze)
+> **Policy**: Backward compatible within 1.x. Breaking changes require ADR.
+
+## Public API
+
+These types and methods are the stable contract for all external
+consumers: CLI, SDK, REST API, GUI, and automation.
+
+### Orchestration
+
+| Entry Point | Module | Description |
+|---|---|---|
+| `RuleWorkflow` | `engine.rule_workflow` | Single orchestration entry point |
+| `WorkflowResult` | `engine.rule_workflow` | Pipeline outcome (success, errors, stage results) |
+
+#### RuleWorkflow
+
+```python
+class RuleWorkflow:
+    @staticmethod
+    def infer(examples: list[tuple[str, str]], name: str = "Inferred Rule") -> InferredRule | None: ...
+
+    @staticmethod
+    def open_session(inferred_rule: InferredRule, store: object | None = None) -> RuleSession: ...
+
+    @staticmethod
+    def inspect(rule: Rule) -> RuleInspection: ...
+
+    @staticmethod
+    def execute(rule: Rule, inputs: list[str]) -> list[str]: ...
+
+    def run(self, examples: list[tuple[str, str]], name: str = "Inferred Rule",
+            store: object | None = None) -> WorkflowResult: ...
+```
+
+**Contract**: `RuleWorkflow` is the **only** orchestration entry point.
+No consumer may call `RuleSession`, `RuleInspection`, or `preview_rule`
+directly as a workflow entry point.  All workflow traversal goes
+through `RuleWorkflow`.
+
+#### WorkflowResult
+
+```python
+@dataclass
+class WorkflowResult:
+    inferred_rule: InferredRule | None   # from infer() stage
+    inspection: RuleInspection | None    # from inspect() stage
+    validation: SessionValidationResult | None  # from validate() stage
+    preview: ExamplePreviewResult | None # from preview() stage
+    outputs: list[str]                   # from execute() stage
+    errors: list[str]                    # collected error messages
+    success: bool                        # True iff no errors
+
+    def add_error(self, message: str) -> None: ...
+```
+
+**Contract**:
+- `success` is deterministic: `True` iff `errors` is empty
+- `errors` is never `None` (always a list)
+- Stage results are `None` when the stage was not reached
+- `outputs` is `[]` when execution didn't run
+
+### Session
+
+| Type | Module | Description |
+|---|---|---|
+| `RuleSession` | `engine.rule_session` | Mutable workflow state (owned by RuleWorkflow) |
+| `SessionState` | `models.session_state` | Explicit lifecycle state enum |
+| `InvalidStateTransition` | `models.session_state` | Raised on invalid state transitions |
+| `SessionValidationResult` | `models.session_validation` | Validation outcome |
+
+#### SessionState
+
+```
+NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → EXECUTED
+```
+
+`EXECUTED` is terminal.  Same-state transitions are idempotent.
+
+### Domain Models
+
+| Type | Module | Description |
+|---|---|---|
+| `InferredRule` | `models.inferred_rule` | Rule + inference metadata |
+| `Rule` | `models.rule` | Rule with ordered `RuleStep` list |
+| `RuleStep` | `models.rule` | Single transformation step (type + parameters) |
+| `RuleLifecycle` | `models.rule_lifecycle` | Rule maturity: INFERRED → EDITABLE → TESTED → EXECUTABLE |
+
+### Inspection & Preview
+
+| Type | Module | Description |
+|---|---|---|
+| `RuleInspection` | `engine.rule_inspector` | Structured rule metadata |
+| `ExamplePreviewResult` | `engine.preview_pipeline` | Preview output |
+| `PreviewEntry` | `engine.preview_pipeline` | Single preview entry (input → output → expected → match) |
+
+#### RuleInspection
+
+```python
+@dataclass
+class RuleInspection:
+    rule_id: str
+    rule_name: str
+    step_count: int
+    steps: list[StepInfo]       # per-step detail
+    uses_index: bool
+    uses_metadata: bool
+    is_empty: bool
+    warnings: list[str]
+```
+
+#### ExamplePreviewResult
+
+```python
+@dataclass
+class ExamplePreviewResult:
+    entries: list[PreviewEntry]
+    all_match: bool
+
+@dataclass
+class PreviewEntry:
+    input_text: str
+    output_text: str
+    expected: str | None
+    match: bool | None
+```
+
+### Inference
+
+| Function | Module | Description |
+|---|---|---|
+| `infer_rule(examples, name)` | `engine.rule_inference` | Infer a Rule from example pairs |
+
+Returns `InferredRule | None`.  `None` means no transformation needed.
+
+#### Public helper functions
+
+```python
+from models.session_state import can_transition, transition
+
+def can_transition(current: SessionState, target: SessionState) -> bool: ...
+def transition(current: SessionState, target: SessionState) -> SessionState: ...
+```
+
+### Exceptions
+
+| Exception | Module | When |
+|---|---|---|
+| `InvalidStateTransition` | `models.session_state` | Invalid state transition attempted |
+| `RuntimeError` | builtins | Session already open, session not open |
+
+**Contract**: Only these two exception types are part of the public API.
+Internal validation issues and implementation errors are reported
+through `WorkflowResult.errors` or `SessionValidationResult`, not
+through exceptions.
+
+### CLI
+
+| Command | Contract |
+|---|---|
+| `ruleforge workflow run <examples>` | `RuleWorkflow.run()` — full pipeline |
+| `ruleforge workflow infer <examples>` | `RuleWorkflow.infer()` → JSON to stdout |
+| `ruleforge workflow execute <rule> <ins>` | `RuleWorkflow.execute()` |
+
+**Output contract**:
+- `infer` prints JSON to stdout (machine-readable, compatibility commitment)
+- Status/help messages to stderr (not a compatibility guarantee)
+- Exit codes: `0` = success, `1` = failure
+
+## Internal API (not part of public contract)
+
+These modules may change without notice.  Consumers must not depend
+on them directly.
+
+| Module | Role |
+|---|---|
+| `editor.edit_session.EditSession` | Working-copy management (session internal) |
+| `editor.domain_validator.DomainValidator` | Rule validation (called by session) |
+| `storage.inferred_rule_store.InferredRuleStore` | Persistence (called by session) |
+| `engine.rule_engine` | Batch rename engine (adapter) |
+| `engine.rename_engine` | Filesystem rename execution |
+| `engine.rename_plan_engine` | Rename plan generation |
+| `engine.preview_engine` | Preview generation for batch rename |
+| `engine.rule_analysis` | Analysis warnings |
+| `engine.metadata_provider` | File metadata |
+| `engine.operation_logger` | Operation logging |
+| `engine.undo_engine` | Undo support |
+| `ui.*` | GUI (PySide6) |
+
+## Compatibility Policy
+
+1. **Public API is backward compatible within 1.x.**
+2. **New capability extends, never replaces** existing public API.
+3. **Breaking changes require**: ADR, migration path, new major version
+   (or explicit architectural approval during pre-1.0 development).
+4. **Machine-readable output formats** (infer JSON, exit codes) are
+   compatibility commitments.
+5. **Human-readable messages** are not guaranteed stable.
+6. **Reserved exit codes**: `0` success, `1` failure.  Codes `2`–`127`
+   reserved for future workflow categories.

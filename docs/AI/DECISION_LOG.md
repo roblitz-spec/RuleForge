@@ -118,3 +118,35 @@
   4. `RuleLifecycle` remains for rule maturity tracking (InferredRuleStore persistence).
   5. Future CLI/SDK/API/GUI must respect `SessionState` — it is the single workflow state authority.
 - **Alternatives Considered**: Keep `RuleLifecycle` as the sole state model. Rejected — not granular enough for workflow stages (no VALIDATED, PREVIEW_READY states). Merging session states into RuleLifecycle would break the InferredRuleStore persistence contract.
+
+## ADR-012: Public API Freeze & Compatibility Baseline
+
+- **Milestone**: M10.5-E
+- **Status**: Accepted
+- **Decision**: Freeze the public Workflow API as the long-term contract for all external integrations. Document public vs internal boundaries explicitly. Adopt backward-compatible evolution policy within 1.x.
+- **Context**: RuleForge now has a complete headless Rule IDE workflow (M10.5–M10.5-D). Before adding runtime adapters, SDKs, or GUI workflow integration, the public API surface must be stabilized so all future consumers depend on a well-defined contract rather than internal implementation details.
+- **Public API** (frozen):
+  1. `RuleWorkflow` — single orchestration entry point (infer, open_session, inspect, execute, run)
+  2. `WorkflowResult` — deterministic success/failure with stage-level results
+  3. `RuleSession` — mutable state owner (lifecycle enforcement)
+  4. `SessionState` — explicit workflow state model
+  5. `InvalidStateTransition` — only public exception type
+  6. Domain models: `InferredRule`, `Rule`, `RuleStep`, `RuleLifecycle`
+  7. Inspection/Preview: `RuleInspection`, `ExamplePreviewResult`, `PreviewEntry`
+  8. Inference: `infer_rule()`
+  9. CLI: `ruleforge workflow run|infer|execute` (machine-readable JSON for `infer`)
+- **Internal API** (may change without notice):
+  - `EditSession`, `DomainValidator`, `InferredRuleStore`, `RuleEngine`, `RenameEngine`, `RenamePlanEngine`, `PreviewEngine`, `RuleAnalysis`, `MetadataProvider`, `OperationLogger`, `UndoEngine`, `ui.*`
+- **Compatibility policy**:
+  1. Public API is backward compatible within 1.x
+  2. New capability extends, never replaces
+  3. Breaking changes require ADR + migration path
+  4. Machine-readable output (infer JSON, exit codes) are compatibility commitments
+  5. Human-readable messages (status, help) are not guaranteed stable
+  6. Exit codes: `0` = success, `1` = failure; `2`–`127` reserved
+- **Consequences**:
+  1. CLI verified to use only public API methods
+  2. Exception model is explicit (only `InvalidStateTransition` is public)
+  3. `docs/AI/API_CONTRACT.md` is the authoritative reference
+  4. All future milestones (M11+) must respect this contract
+- **Alternatives Considered**: Defer API freeze until after M11 Runtime. Rejected — adding runtime adapters without a stable API contract risks coupling adapters to implementation details. Freeze now, extend later.
