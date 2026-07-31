@@ -4,6 +4,17 @@
 
 **Origin**: RuleForge originated from ResourceHub, a batch resource renaming project. During development, the project evolved from task-specific automation toward example-driven rule inference and ultimately became an AI-assisted Rule IDE. File renaming is the initial adapter/use case.
 
+**Development Branch**: [`m11-execution-platform`](https://github.com/roblitz-spec/RuleForge/tree/m11-execution-platform)  
+**CI**: [![Test](https://github.com/roblitz-spec/RuleForge/actions/workflows/test.yml/badge.svg)](https://github.com/roblitz-spec/RuleForge/actions/workflows/test.yml)
+
+## 当前状态
+
+| 里程碑 | 状态 | 说明 |
+|---|---|---|
+| M11 — Execution Platform v1 | ✅ Frozen | 统一执行架构，103 tests |
+| M12-A — Batch Execution Foundation | ✅ Frozen | 批量执行基础，27 tests |
+| M12-B+ | 🔄 Planned | 路线待定 |
+
 ## 执行平台
 
 RuleForge 提供统一执行架构（Execution Platform v1），支持多种执行引擎：
@@ -14,12 +25,13 @@ RuleForge 提供统一执行架构（Execution Platform v1），支持多种执�
 | `rename` | 文件重命名 | 文件系统重命名操作 |
 | `dry-run` | 模拟执行 | 验证与冲突检测，不修改文件系统 |
 | `inspect` | 执行分析 | 计划摘要、元数据、范围预估 |
+| `batch` | 批量执行 | 多规则批量协调执行 |
 
 详见 [`docs/AI/EXECUTION_PLATFORM.md`](docs/AI/EXECUTION_PLATFORM.md)。
 
 ## 技术栈
 
-- Python 3.12+
+- Python 3.13+
 - PySide6
 
 ## 运行
