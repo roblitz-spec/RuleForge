@@ -305,6 +305,21 @@ result = ExecutionPipeline.run(context, engine)
 result.trace        # ExecutionTrace | None
 result.metrics      # ExecutionMetrics | None
 result.diagnostics  # dict[str, object] (backward compat)
+```
+
+### Platform Architecture Baseline
+
+The full M11 platform architecture is documented at:
+[`EXECUTION_PLATFORM.md`](EXECUTION_PLATFORM.md)
+
+Key frozen constraints:
+
+1. Pipeline executes, Registry selects.
+2. Engines implement behavior, not orchestration.
+3. Planning is separated from execution.
+4. Observability belongs to execution lifecycle.
+5. ExecutionResult is the unified output contract.
+6. New execution modes are Engines, not Pipeline branches.
 
 ### CLI
 

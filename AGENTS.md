@@ -21,6 +21,7 @@
 | `M11-C-complete` | Dry Run & Inspection Engine，15 tests |
 | `M11-D-complete` | Engine Registry，23 tests |
 | `M11-E-complete` | Execution Observability，28 tests |
+| `M11-complete` | Execution Platform v1，103 tests，743 total——架构基线冻结 |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -97,6 +98,7 @@
 - Dry Run & Inspection Engine：M11-C `DryRunExecutionEngine` + `InspectionExecutionEngine`，15 tests
 - Engine Registry：M11-D `EngineRegistry` + `execute_named()`，23 tests
 - Execution Observability：M11-E `ExecutionTrace` + `ExecutionMetrics` + `ExecutionDiagnostics`，28 tests
+- Platform Freeze：M11-F `EXECUTION_PLATFORM.md` 最终架构基线，6 条冻结设计原则
 
 ## 架构原则
 
@@ -111,6 +113,19 @@
 - ExecutionEngine：抽象引擎接口（prepare/execute/cleanup），不操纵工作流状态
 - EngineRegistry：命名引擎注册与选择，解耦 RuleWorkflow 与具体引擎
 - 可观测性：ExecutionTrace（Pipeline 拥有）+ ExecutionMetrics（结构化指标）+ ExecutionDiagnostics
+
+## M11 冻结设计原则（Execution Platform v1）
+
+以下原则为架构约束，M12+ 不得违反：
+
+1. **Pipeline 执行，Registry 选择** — Pipeline 不解引 Engine；Registry 不执行
+2. **Engine 实现行为，不实现编排** — Engine 拥有执行语义，不控制工作流
+3. **规划与执行分离** — `build_rename_plan()` 验证和冲突检测；Engine 执行
+4. **可观测性属于执行生命周期** — Trace 由 Pipeline 创建和填充
+5. **ExecutionResult 是统一输出契约** — 所有 Engine 产生相同结果类型
+6. **新执行模式是 Engine，不是 Pipeline 分支** — 通过新 ExecutionEngine 扩展
+
+详见 `docs/AI/EXECUTION_PLATFORM.md`
 
 ## Context Contract
 
