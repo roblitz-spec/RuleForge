@@ -166,6 +166,8 @@ through exceptions.
 | `ExecutionPipeline` | `engine.execution_pipeline` | Coordinates context → engine → result |
 | `StringTransformEngine` | `engine.string_transform_engine` | Default headless string transform engine |
 | `RenameExecutionEngine` | `engine.rename_execution_engine` | Filesystem rename engine (prepare→conflict detect→execute) |
+| `DryRunExecutionEngine` | `engine.dry_run_execution_engine` | Non-mutating validation (identical conflict detection) |
+| `InspectionExecutionEngine` | `engine.inspection_execution_engine` | Execution analysis (summary, metadata, scope estimation) |
 | `FilesystemAdapter` | `engine.filesystem_adapter` | Abstract filesystem (testing, dry run) |
 | `RealFilesystemAdapter` | `engine.filesystem_adapter` | Production pathlib adapter |
 
@@ -231,6 +233,15 @@ Execution order: source paths sorted ascending.
 Conflict detection: duplicate targets → fatal, destination exists → fatal.
 Journal: `result.diagnostics["operations_journal"]` is a list of
 `{"source", "target", "status", "error"}` per operation.
+
+#### Engine Comparison
+
+| Engine | Filesystem Mutation | Conflict Detection | Diagnostics |
+|---|---|---|---|
+| `StringTransformEngine` | No | No | preview results |
+| `RenameExecutionEngine` | **Yes** | Yes (fatal) | journal, conflict count |
+| `DryRunExecutionEngine` | No | Yes (fatal) | journal, would_rename, would_skip |
+| `InspectionExecutionEngine` | No | Yes (non-fatal) | journal, stems, scope, metadata |
 
 ### CLI
 
