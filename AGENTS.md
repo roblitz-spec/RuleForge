@@ -17,6 +17,7 @@
 | `M9-complete` | RuleInference Engine，30 tests |
 | `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E, CLI, API Freeze, Constitution，164 tests |
 | `M11-A-complete` | Execution Pipeline，24 tests |
+| `M11-B-complete` | Rename Execution Engine，13 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -89,6 +90,7 @@
 - CLI 集成：`cli/workflow_cli.py` 薄包装层，`run`/`infer`/`execute` 命令，18 tests
 - API Freeze：公共 API 契约冻结于 `docs/AI/API_CONTRACT.md`，ADR-012 记录兼容性策略
 - Execution Pipeline：M11-A 引入 `ExecutionContext` + `ExecutionEngine` + `ExecutionPipeline` + `ExecutionResult`，24 tests
+- Rename Execution Engine：M11-B `RenameExecutionEngine` + `FilesystemAdapter`，13 tests
 
 ## 架构原则
 

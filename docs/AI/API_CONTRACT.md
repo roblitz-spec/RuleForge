@@ -165,6 +165,9 @@ through exceptions.
 | `ExecutionEngine` | `engine.execution_engine` | Abstract engine interface (prepare/execute/cleanup) |
 | `ExecutionPipeline` | `engine.execution_pipeline` | Coordinates context → engine → result |
 | `StringTransformEngine` | `engine.string_transform_engine` | Default headless string transform engine |
+| `RenameExecutionEngine` | `engine.rename_execution_engine` | Filesystem rename engine (prepare→conflict detect→execute) |
+| `FilesystemAdapter` | `engine.filesystem_adapter` | Abstract filesystem (testing, dry run) |
+| `RealFilesystemAdapter` | `engine.filesystem_adapter` | Production pathlib adapter |
 
 #### ExecutionContext
 
@@ -204,6 +207,30 @@ class RuleWorkflow:
 ```
 
 `engine=None` defaults to `StringTransformEngine`.
+
+#### RenameExecutionEngine
+
+```python
+class RenameExecutionEngine(ExecutionEngine):
+    def __init__(self, fs: FilesystemAdapter | None = None): ...
+
+    # prepare: validate sources exist, compute target names via
+    #          preview_rule, detect duplicate/existing conflicts
+    def prepare(self, context: ExecutionContext) -> None: ...
+
+    # execute: rename files in deterministic source-path order,
+    #          fail-fast on first error, return ExecutionResult
+    #          with operations journal in diagnostics
+    def execute(self, context: ExecutionContext) -> ExecutionResult: ...
+
+    # cleanup: clear internal operation journal
+    def cleanup(self, context: ExecutionContext) -> None: ...
+```
+
+Execution order: source paths sorted ascending.
+Conflict detection: duplicate targets → fatal, destination exists → fatal.
+Journal: `result.diagnostics["operations_journal"]` is a list of
+`{"source", "target", "status", "error"}` per operation.
 
 ### CLI
 
