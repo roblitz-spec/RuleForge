@@ -173,6 +173,9 @@ through exceptions.
 | `FilesystemAdapter` | `engine.filesystem_adapter` | Abstract filesystem (testing, dry run) |
 | `RealFilesystemAdapter` | `engine.filesystem_adapter` | Production pathlib adapter |
 | `EngineRegistry` | `engine.engine_registry` | Named engine discovery and selection |
+| `ExecutionTrace` | `engine.execution_trace` | Execution lifecycle trace (Pipeline-owned) |
+| `ExecutionMetrics` | `engine.execution_metrics` | Structured execution statistics |
+| `ExecutionDiagnostics` | `engine.execution_diagnostics` | Structured diagnostics builder |
 
 #### ExecutionContext
 
@@ -286,6 +289,22 @@ class RuleWorkflow:
     @staticmethod
     def execute(rule: Rule, inputs: list[str]) -> list[str]: ...
 ```
+
+### Observability (M11-E)
+
+Every `ExecutionPipeline.run()` produces:
+
+- **`ExecutionTrace`**: lifecycle events (execution/validation/prepare/execute/cleanup), timestamps, per-stage duration. Pipeline-owned — engines never create traces.
+- **`ExecutionMetrics`**: `files_scanned`, `files_selected`, `files_modified`, `files_skipped`, `conflict_count`, `error_count`, `duration_ms` + engine-specific `extra`.
+- **`ExecutionDiagnostics`**: structured builder with `errors[]`, `warnings[]`, `conflicts[]`, `journal[]`, `metadata{}`.
+
+All three are attached to `ExecutionResult` as `trace`, `metrics`, and `diagnostics` fields.  Existing callers are unaffected — new fields are optional and additive.
+
+```python
+result = ExecutionPipeline.run(context, engine)
+result.trace        # ExecutionTrace | None
+result.metrics      # ExecutionMetrics | None
+result.diagnostics  # dict[str, object] (backward compat)
 
 ### CLI
 

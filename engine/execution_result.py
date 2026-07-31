@@ -7,6 +7,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from engine.execution_metrics import ExecutionMetrics
+from engine.execution_trace import ExecutionTrace
+
 
 @dataclass
 class ExecutionResult:
@@ -20,6 +23,8 @@ class ExecutionResult:
         errors: Normalized error messages (never None).
         diagnostics: Engine-specific metadata (timing, trace, etc.).
         duration_ms: Wall-clock execution time in milliseconds.
+        trace: Execution lifecycle trace (M11-E, optional).
+        metrics: Structured execution metrics (M11-E, optional).
     """
 
     success: bool = True
@@ -29,6 +34,8 @@ class ExecutionResult:
     errors: list[str] = field(default_factory=list)
     diagnostics: dict[str, object] = field(default_factory=dict)
     duration_ms: float | None = None
+    trace: ExecutionTrace | None = None
+    metrics: ExecutionMetrics | None = None
 
     def add_error(self, message: str) -> None:
         self.errors.append(message)

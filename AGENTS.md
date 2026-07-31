@@ -20,6 +20,7 @@
 | `M11-B-complete` | Rename Execution Engine，13 tests |
 | `M11-C-complete` | Dry Run & Inspection Engine，15 tests |
 | `M11-D-complete` | Engine Registry，23 tests |
+| `M11-E-complete` | Execution Observability，28 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -95,6 +96,7 @@
 - Rename Execution Engine：M11-B `RenameExecutionEngine` + `FilesystemAdapter`，13 tests
 - Dry Run & Inspection Engine：M11-C `DryRunExecutionEngine` + `InspectionExecutionEngine`，15 tests
 - Engine Registry：M11-D `EngineRegistry` + `execute_named()`，23 tests
+- Execution Observability：M11-E `ExecutionTrace` + `ExecutionMetrics` + `ExecutionDiagnostics`，28 tests
 
 ## 架构原则
 
@@ -105,9 +107,10 @@
 - RuleInference：纯函数，无状态，组合搜索
 - RuleSession：唯一可变状态所有者，SessionState 强制转移
 - RuleWorkflow：无状态编排层，读取 SessionState 但不写入
-- ExecutionPipeline：执行协调层，验证 → 准备 → 执行 → 收集 → 清理
+- ExecutionPipeline：执行协调层，验证 → 准备 → 执行 → 收集 → 清理，拥有 Trace
 - ExecutionEngine：抽象引擎接口（prepare/execute/cleanup），不操纵工作流状态
 - EngineRegistry：命名引擎注册与选择，解耦 RuleWorkflow 与具体引擎
+- 可观测性：ExecutionTrace（Pipeline 拥有）+ ExecutionMetrics（结构化指标）+ ExecutionDiagnostics
 
 ## Context Contract
 

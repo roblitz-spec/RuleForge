@@ -52,6 +52,9 @@ class InspectionExecutionEngine(ExecutionEngine):
         result.diagnostics["rule_name"] = context.rule.name
         result.diagnostics["step_count"] = len(context.rule.steps)
 
+        result.actions_executed = rename_count
+        result.actions_skipped = skip_count
+
         if self._conflicts:
             result.add_error(
                 f"Inspection found {len(self._conflicts)} conflict(s)"
