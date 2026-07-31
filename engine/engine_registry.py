@@ -94,6 +94,7 @@ class EngineRegistry:
     @classmethod
     def default(cls) -> EngineRegistry:
         """Create a registry pre-populated with all built-in engines."""
+        from engine.batch_execution_engine import BatchExecutionEngine
         from engine.dry_run_execution_engine import DryRunExecutionEngine
         from engine.inspection_execution_engine import InspectionExecutionEngine
         from engine.rename_execution_engine import RenameExecutionEngine
@@ -104,4 +105,5 @@ class EngineRegistry:
         r.register("rename", RenameExecutionEngine)
         r.register("dry-run", DryRunExecutionEngine)
         r.register("inspect", InspectionExecutionEngine)
+        r.register("batch", BatchExecutionEngine)
         return r

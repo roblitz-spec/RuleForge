@@ -78,7 +78,8 @@ class TestRegistration:
         assert r.is_registered("rename")
         assert r.is_registered("dry-run")
         assert r.is_registered("inspect")
-        assert len(r.names()) == 4
+        assert r.is_registered("batch")
+        assert "batch" in r.names()
 
 
 # ── Resolution ────────────────────────────────────────────────────

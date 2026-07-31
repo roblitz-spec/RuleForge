@@ -12,6 +12,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from engine.batch_executor import BatchExecutor
+from engine.batch_result import BatchResult
+from engine.execution_batch import ExecutionBatch
 from engine.execution_context import ExecutionContext
 from engine.execution_engine import ExecutionEngine
 from engine.execution_pipeline import ExecutionPipeline
@@ -159,6 +162,24 @@ class RuleWorkflow:
         eng = reg.create(engine_name)
         ctx = ExecutionContext(rule=rule, targets=targets)
         return ExecutionPipeline.run(ctx, eng)
+
+    # ── Batch execution (M12) ──────────────────────────────────
+
+    @staticmethod
+    def execute_batch(
+        batch: ExecutionBatch,
+        registry: EngineRegistry | None = None,
+    ) -> BatchResult:
+        """Execute a batch of rules through the ExecutionPipeline.
+
+        Args:
+            batch: ExecutionBatch with items and policy.
+            registry: EngineRegistry (default: EngineRegistry.default()).
+
+        Returns:
+            BatchResult with per-item ExecutionResults and summary.
+        """
+        return BatchExecutor.run(batch, registry)
 
     # ── Full pipeline ───────────────────────────────────────────
 

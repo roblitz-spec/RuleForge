@@ -22,6 +22,7 @@
 | `M11-D-complete` | Engine Registry，23 tests |
 | `M11-E-complete` | Execution Observability，28 tests |
 | `M11-complete` | Execution Platform v1，103 tests，743 total——架构基线冻结 |
+| `M12-A-complete` | Batch Execution Foundation，27 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -126,6 +127,16 @@
 6. **新执行模式是 Engine，不是 Pipeline 分支** — 通过新 ExecutionEngine 扩展
 
 详见 `docs/AI/EXECUTION_PLATFORM.md`
+
+## Batch Execution (M12-A)
+
+- `ExecutionBatch`：有序 `BatchItem` 容器，含 `stop_on_error` / `validate_first` 策略
+- `BatchItem`：单个执行单元（rule + targets + engine_name + label + options）
+- `BatchExecutor.run()`：顺序迭代 BatchItem，每项通过 `ExecutionPipeline.run()` 执行
+- `BatchResult`：聚合层——每项保存完整 `ExecutionResult`，不修改 `ExecutionResult` 契约
+- `BatchExecutionEngine`：将 batch 包装为 `ExecutionEngine`（通过 context.options["_batch_definition"] 传递）
+- 反嵌套：`BatchItem.engine_name` 不得为 `"batch"` → `ValueError`
+- `RuleWorkflow.execute_batch()`：薄委托层
 
 ## Context Contract
 
