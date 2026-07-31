@@ -25,6 +25,7 @@
 | `M12-A-complete` | Batch Execution Foundation，27 tests |
 | `M12-B-complete` | Plugin / Extension Framework，46 tests |
 | `M12-C-complete` | First Official Plugin (RuleValidationPlugin)，36 tests |
+| `M12-D-complete` | First Capability Plugin (RollbackPlugin)，26 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -162,6 +163,17 @@
 - 独立可调用 API：`plugin.validate(rule) → ValidationResult`
 - 全生命周期验证通过：register → enable → activate → deactivate → disable → unregister
 - Plugin Framework 无需任何修改即可支撑官方插件 —— 冻结契约完全满足需求
+
+## First Capability Plugin (M12-D)
+
+- `RollbackPlugin`：首个能力插件，`plugins/rollback_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 API：`record_rename(old, new)` + `rollback() → RollbackResult`
+- LIFO 回滚：反向逆序恢复所有已记录重命名
+- 安全处理：文件已不存在 → skip、目标已存在 → skip、OS error → failed
+- `RollbackResult`：restored、failed、skipped 分类 + success_rate
+- Lifecycle vs Business State：`deactivate()` 保留历史，`unregister()` 清理资源
+- 26 tests，863 total
 
 ## Context Contract
 

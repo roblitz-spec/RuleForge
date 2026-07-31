@@ -15,7 +15,8 @@
 | M12-A — Batch Execution Foundation | ✅ Frozen | 批量执行基础，27 tests |
 | M12-B — Plugin / Extension Framework | ✅ Frozen | 插件与扩展框架，46 tests |
 | M12-C — First Official Plugin | ✅ Frozen | RuleValidationPlugin，36 tests |
-| M12-D | 🔄 Planned | |
+| M12-D — First Capability Plugin | ✅ Frozen | RollbackPlugin，26 tests |
+| M12-E | 🔄 Planned | |
 
 ## 执行平台
 
@@ -41,6 +42,7 @@ M12-B 建立了官方插件与扩展框架，所有未来扩展能力必须作�
 | `PluginRegistry` | 统一注册、发现、启用/禁用、能力查询 |
 | `PluginCapability` | 6 个标准扩展点 |
 | `RuleValidationPlugin` | 首个官方插件 — 规则静态校验 |
+| `RollbackPlugin` | 首个能力插件 — LIFO 重命名回滚 |
 
 详见 [`docs/architecture/M12B_PLUGIN_FRAMEWORK.md`](docs/architecture/M12B_PLUGIN_FRAMEWORK.md)。
 

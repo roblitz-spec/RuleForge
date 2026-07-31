@@ -26,7 +26,7 @@ Batch Execution Foundation (M12-A) ← frozen: ExecutionBatch, BatchExecutor, Ba
 Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Extension Points
         │
         ├── RuleValidationPlugin (M12-C) ← frozen: first official plugin
-        ├── M12-D Rollback (planned)
+        ├── RollbackPlugin (M12-D) ← frozen: first capability plugin
         ├── M12-E Scheduler (planned)
         ├── M12-F Remote Provider (planned)
         └── ... future extensions
@@ -50,6 +50,31 @@ All future official plugins MUST follow the same pattern:
 2. Register through `PluginRegistry`
 3. Declare capabilities via `PluginCapability`
 4. Never bypass the plugin framework
+
+### Capability Plugin Baseline (M12-D)
+
+`RollbackPlugin` is the first official capability plugin, demonstrating
+that the Plugin Framework supports plugins with business state (history,
+transactions) without modifying the framework.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.rollback` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | LIFO rename rollback |
+| Tests | 26 |
+
+Key architectural finding: **Lifecycle state** (LOADED/ENABLED/ACTIVE)
+and **business state** (rollback history) are separate domains.
+`deactivate()` preserves business data; `unregister()` triggers cleanup.
+
+All future capability plugins MUST:
+1. Implement `Plugin` contract
+2. Use official Registry
+3. Use official Lifecycle
+4. Use official Capability Model
+5. Not bypass Plugin Framework
+6. Keep business state separate from lifecycle state
 
 ```
 plugins/                          (new, parallel to engine/)
@@ -217,6 +242,24 @@ Transitions:
 
 Lifecycle errors are contained — a failing `on_activate` does not prevent
 other plugins from activating.
+
+### Lifecycle State vs. Business State
+
+Plugin lifecycle state (LOADED/ENABLED/ACTIVE) and plugin business state
+are **separate domains**.
+
+| Domain | Managed by | Example |
+|---|---|---|
+| Lifecycle | `PluginRegistry` | LOADED → ENABLED → ACTIVE |
+| Business | Plugin internals | Rollback history, validation cache |
+
+Key rules:
+- `deactivate()` does NOT destroy business state (history, caches).
+- `unregister()` (via `on_unload`) is the designated cleanup point.
+- `clear_history()` / `reset()` are business operations, independent of
+  lifecycle hooks.
+- A deactivated plugin may still provide queries against its business
+  state (e.g., check history size after deactivation).
 
 ## Extension Points
 
