@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -71,7 +72,8 @@ class ScanWorker(QThread):
                 t4 = time.monotonic()
                 _log(f"Preview finish  elapsed={t4 - t3:.3f}s")
 
-        except Exception:
+        except Exception as e:
+            print(f"[ScanWorker] Error during scan/preview: {e}", file=sys.stderr)
             items = []
 
         self.items = items

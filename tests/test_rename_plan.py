@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from engine.rename_plan_engine import RenamePlanEngine, _check_legality
+from engine.rename_plan_engine import RenamePlanEngine
+from validator.validator import check_legality
 from models.enums import ItemType
 from models.file_item import FileItem
 from models.rename_plan import RenamePlanStatus
@@ -271,20 +272,20 @@ class TestPreviewRenameConsistency:
 
 
 class TestLegality:
-    """_check_legality 单元测试。"""
+    """check_legality 单元测试。"""
 
     def test_ok(self) -> None:
-        assert _check_legality("Movie 01") == ""
+        assert check_legality("Movie 01") == ""
 
     def test_empty(self) -> None:
-        assert "不能为空" in _check_legality("")
+        assert "不能为空" in check_legality("")
 
     def test_forbidden(self) -> None:
-        assert _check_legality("a:b") != ""
+        assert check_legality("a:b") != ""
 
     def test_long_name(self) -> None:
-        assert _check_legality("A" * 256) != ""
+        assert check_legality("A" * 256) != ""
 
     def test_con_reserved(self) -> None:
-        assert _check_legality("CON") != ""
-        assert _check_legality("con") != ""  # case insensitive
+        assert check_legality("CON") != ""
+        assert check_legality("con") != ""  # case insensitive

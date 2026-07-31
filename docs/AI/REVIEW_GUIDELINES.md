@@ -1,4 +1,4 @@
-# ResourceHub — Review Guidelines
+# RuleForge — Review Guidelines
 
 > For the Reviewer (ChatGPT / User) when evaluating AI Developer output.
 
@@ -17,7 +17,7 @@
 
 ### Testing
 - [ ] Are new tests added for the change?
-- [ ] Do all 152 existing tests still pass?
+- [ ] Does the full test suite still pass?
 - [ ] Are boundary cases covered?
 - [ ] Is the regression matrix (single/2-combo/3-combo/E2E/undo) verified?
 

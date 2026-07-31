@@ -10,14 +10,7 @@ from models.rename_plan import (
     RenamePlanStatus,
 )
 from models.rename_policy import RenamePolicy
-
-_FORBIDDEN_CHARS = set(r'<>:"/\|?*')
-
-_WIN_RESERVED = {
-    "CON", "PRN", "AUX", "NUL",
-    *(f"COM{i}" for i in range(1, 10)),
-    *(f"LPT{i}" for i in range(1, 10)),
-}
+from validator.validator import check_legality
 
 
 class RenamePlanEngine:
@@ -38,7 +31,7 @@ class RenamePlanEngine:
 
             # 合法性
             base = item.preview_name or ""
-            msg = _check_legality(base)
+            msg = check_legality(base)
             if msg:
                 plans.append(RenamePlan(
                     source=item.full_path,
@@ -110,22 +103,6 @@ class RenamePlanEngine:
                 plan.message = "将覆盖已存在的目标文件"
 
         return plans
-
-
-def _check_legality(name: str) -> str:
-    if not name or not name.strip():
-        return "名称不能为空"
-    if any(c in name for c in _FORBIDDEN_CHARS):
-        return "包含非法字符"
-    if name.rstrip() != name:
-        return "名称不能以空格结尾"
-    if name.rstrip(".") != name:
-        return "名称不能以 . 结尾"
-    if len(name) > 255:
-        return "名称过长"
-    if name.upper() in _WIN_RESERVED:
-        return f"「{name}」是系统保留名称"
-    return ""
 
 
 def _detect_conflicts(plans: list[RenamePlan]) -> None:

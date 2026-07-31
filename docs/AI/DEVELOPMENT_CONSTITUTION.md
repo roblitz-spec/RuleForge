@@ -1,4 +1,4 @@
-# ResourceHub — Development Constitution
+# RuleForge — Development Constitution
 
 ## Core Principles
 

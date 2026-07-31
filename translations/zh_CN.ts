@@ -2,7 +2,7 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="zh_CN">
 <context>
-    <name>ResourceHub</name>
+    <name>RuleForge</name>
     <message><source>menu.tools</source><translation>工具</translation></message>
     <message><source>menu.settings</source><translation>设置...</translation></message>
     <message><source>menu.undo</source><translation>撤销上次重命名</translation></message>

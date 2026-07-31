@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Callable
 
-from PySide6.QtCore import Qt as QtCore
+from PySide6.QtCore import Qt as QtCore, QTimer
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -27,6 +27,8 @@ from PySide6.QtWidgets import (
 from models.rule import Rule
 from models.rule_step import RuleStep
 from storage.repository import RuleRepository
+from storage.session_store import SessionStore
+from editor.edit_session import EditSession
 from ui.regex_assistant import RegexAssistant
 
 _STEP_TYPES: list[tuple[str, str, str, str]] = [
@@ -69,8 +71,21 @@ class RuleManagerDialog(QDialog):
         super().__init__(parent)
         self._repo = repo
         self._current_rule: Rule | None = None
+        self._session: EditSession | None = None
         self._on_steps_changed = on_steps_changed
         self._regex_assistant: RegexAssistant | None = None
+
+        # WP-10: auto-save timer (30 s default)
+        self._auto_save_timer = QTimer(self)
+        self._auto_save_timer.setInterval(30_000)
+        self._auto_save_timer.timeout.connect(self._on_auto_save)
+        self._auto_save_timer.start()
+
+        # WP-12 / Issue B: session persistence
+        from pathlib import Path
+        self._session_store = SessionStore(
+            Path.home() / ".resourcehub" / "sessions"
+        )
 
         self.setWindowTitle("规则管理")
         self.resize(900, 550)
@@ -129,6 +144,16 @@ class RuleManagerDialog(QDialog):
         step_layout.addWidget(self._step_list)
 
         right.addWidget(step_group, stretch=1)
+
+        # WP-14: warning panel — non-blocking rule analysis display
+        self._warning_panel = QLabel()
+        self._warning_panel.setVisible(False)
+        self._warning_panel.setWordWrap(True)
+        self._warning_panel.setStyleSheet(
+            "QLabel { color: #856404; background-color: #fff3cd; "
+            "border: 1px solid #ffeeba; border-radius: 4px; padding: 6px; }"
+        )
+        right.addWidget(self._warning_panel)
 
         # ── 步骤参数编辑（QStackedWidget，7 页）──
         self._param_stack = QStackedWidget()
@@ -287,9 +312,18 @@ class RuleManagerDialog(QDialog):
             unpin_action = menu.addAction("取消置顶")
         else:
             pin_action = menu.addAction("置顶")
+        menu.addSeparator()
+        dup_action = menu.addAction("复制规则")
 
         action = menu.exec(self._rule_list.viewport().mapToGlobal(pos))
         if action is None:
+            return
+
+        if action.text() == "复制规则":
+            dup = self._repo.duplicate(rule)
+            self._repo.save()
+            self._refresh_rule_list()
+            self._select_rule_in_list(dup.id)
             return
 
         if rule.pinned and action.text() == "取消置顶":
@@ -298,6 +332,11 @@ class RuleManagerDialog(QDialog):
             rule.pinned = True
         else:
             return
+
+        # Issue A: if this rule IS the current session, sync via WorkingCopy
+        # so the change flows through commit() on next save.
+        if self._current_rule is not None and self._current_rule.id == rule.id:
+            self._current_rule.pinned = rule.pinned
 
         self._repo.save()
         self._refresh_rule_list()
@@ -309,31 +348,42 @@ class RuleManagerDialog(QDialog):
                 self._rule_list.setCurrentRow(i)
                 return
 
-    def _generate_id(self) -> str:
-        existing = {r.id for r in self._repo.all_rules()}
-        idx = 1
-        while f"rule_{idx}" in existing:
-            idx += 1
-        return f"rule_{idx}"
-
     def _on_rule_selected(
         self, current: QListWidgetItem | None, _prev: QListWidgetItem | None,
     ) -> None:
+        if _prev is not None and not self._maybe_discard_changes():
+            self._rule_list.blockSignals(True)
+            self._rule_list.setCurrentItem(_prev)
+            self._rule_list.blockSignals(False)
+            return
+        # WP-12/Issue B: save session before switching away
+        if _prev is not None and self._session is not None:
+            self._save_session()
         if current is None:
             self._current_rule = None
+            self._session = None
             self._name_edit.clear()
             self._desc_edit.clear()
             self._refresh_step_list()
             return
         rule_id = current.data(1)
-        self._current_rule = self._repo.find(rule_id)
-        if self._current_rule:
+        repo_rule = self._repo.find(rule_id)
+        if repo_rule:
+            # WP-12/Issue B: try to restore persisted session first
+            restored = self._restore_session(rule_id)
+            if restored is not None:
+                self._session = restored
+                self._current_rule = self._session.rule
+            else:
+                self._session = EditSession()
+                self._session.open(repo_rule)
+                self._current_rule = self._session.rule
             self._name_edit.setText(self._current_rule.name)
             self._desc_edit.setPlainText(self._current_rule.description)
             self._refresh_step_list()
 
     def _on_add_rule(self) -> None:
-        new_rule = Rule(id=self._generate_id(), name="新规则", steps=[])
+        new_rule = Rule(id=self._repo.generate_unique_id(), name="新规则", steps=[])
         self._repo.add(new_rule)
         self._repo.save()
         self._refresh_rule_list()
@@ -341,6 +391,8 @@ class RuleManagerDialog(QDialog):
 
     def _on_delete_rule(self) -> None:
         if self._current_rule is None:
+            return
+        if not self._maybe_discard_changes():
             return
 
         # 记录删除前的位置，删除后选择相邻规则
@@ -412,6 +464,21 @@ class RuleManagerDialog(QDialog):
             item = QListWidgetItem(f"{num} {label}")
             item.setData(1, id(step))
             self._step_list.addItem(item)
+        self._refresh_warnings()
+
+    def _refresh_warnings(self) -> None:
+        """WP-14: analyze current WorkingCopy and display non-blocking warnings."""
+        if self._current_rule is None:
+            self._warning_panel.setVisible(False)
+            return
+        from engine.rule_analysis import RuleAnalysis
+        analysis = RuleAnalysis.analyze(self._current_rule)
+        text = analysis.format_warnings()
+        if text is None:
+            self._warning_panel.setVisible(False)
+            return
+        self._warning_panel.setText(text)
+        self._warning_panel.setVisible(True)
 
     def _current_step(self) -> RuleStep | None:
         if self._current_rule is None:
@@ -424,6 +491,8 @@ class RuleManagerDialog(QDialog):
             if id(s) == step_id:
                 return s
         return None
+
+
 
     _PAGE_INDEX: dict[str, int] = {
         "replace": 1, "remove_text": 2, "add_prefix": 3,
@@ -517,6 +586,15 @@ class RuleManagerDialog(QDialog):
 
         self._param_stack.setCurrentIndex(page)
 
+
+    @property
+    def current_working_copy(self) -> Rule | None:
+        """The WorkingCopy being edited, for read-only consumers like Preview."""
+        if self._session is not None:
+            return self._session.rule
+        return None
+
+
     def _notify_steps_changed(self) -> None:
         if self._on_steps_changed is not None:
             self._on_steps_changed()
@@ -603,37 +681,38 @@ class RuleManagerDialog(QDialog):
         step = self._current_step()
         if step is None:
             return
+        sid = step.id
         tp = step.type
         if tp == "replace":
-            step.parameters["from"] = self._replace_from.text()
-            step.parameters["to"] = self._replace_to.text()
+            self._session.update_param(sid, "from", self._replace_from.text())
+            self._session.update_param(sid, "to", self._replace_to.text())
         elif tp == "remove_text":
-            step.parameters["text"] = self._remove_text_edit.text()
+            self._session.update_param(sid, "text", self._remove_text_edit.text())
         elif tp == "add_prefix":
-            step.parameters["text"] = self._prefix_edit.text()
+            self._session.update_param(sid, "text", self._prefix_edit.text())
         elif tp == "regex_replace":
-            step.parameters["pattern"] = self._regex_pat.text()
-            step.parameters["replacement"] = self._regex_repl.text()
-            step.parameters["flags"] = self._regex_flags.text()
+            self._session.update_param(sid, "pattern", self._regex_pat.text())
+            self._session.update_param(sid, "replacement", self._regex_repl.text())
+            self._session.update_param(sid, "flags", self._regex_flags.text())
         elif tp == "case":
-            step.parameters["mode"] = self._case_mode.currentData()
+            self._session.update_param(sid, "mode", self._case_mode.currentData())
         elif tp == "trim":
-            step.parameters["mode"] = self._trim_mode.currentData()
+            self._session.update_param(sid, "mode", self._trim_mode.currentData())
         elif tp == "number":
-            step.parameters["start"] = str(self._num_start.value())
-            step.parameters["step"] = str(self._num_step.value())
-            step.parameters["padding"] = str(self._num_pad.value())
-            step.parameters["position"] = self._num_pos.currentData()
+            self._session.update_param(sid, "start", str(self._num_start.value()))
+            self._session.update_param(sid, "step", str(self._num_step.value()))
+            self._session.update_param(sid, "padding", str(self._num_pad.value()))
+            self._session.update_param(sid, "position", self._num_pos.currentData())
         elif tp == "insert":
-            step.parameters["text"] = self._ins_text.text()
-            step.parameters["at_index"] = str(self._ins_idx.value())
+            self._session.update_param(sid, "text", self._ins_text.text())
+            self._session.update_param(sid, "at_index", str(self._ins_idx.value()))
         elif tp == "date":
-            step.parameters["source"] = self._date_src.currentData()
-            step.parameters["format"] = self._date_fmt.text()
-            step.parameters["separator"] = self._date_sep.text()
-            step.parameters["position"] = self._date_pos.currentData()
+            self._session.update_param(sid, "source", self._date_src.currentData())
+            self._session.update_param(sid, "format", self._date_fmt.text())
+            self._session.update_param(sid, "separator", self._date_sep.text())
+            self._session.update_param(sid, "position", self._date_pos.currentData())
         elif tp == "add_suffix":
-            step.parameters["text"] = self._suffix_text.text()
+            self._session.update_param(sid, "text", self._suffix_text.text())
         self._notify_steps_changed()
         row = self._step_list.currentRow()
         self._refresh_step_list()
@@ -643,27 +722,104 @@ class RuleManagerDialog(QDialog):
     #  保存 & 校验
     # ============================================================
 
+    def _maybe_discard_changes(self) -> bool:
+        """WP-11: warn if dirty, with Save / Discard / Cancel options.
+
+        Returns:
+            True if the caller may proceed (changes saved or discarded).
+            False if the caller should cancel the navigation.
+        """
+        if self._session is None or not self._session.is_dirty():
+            return True  # clean → proceed
+        buttons = (
+            QMessageBox.Save
+            | QMessageBox.Discard
+            | QMessageBox.Cancel
+        )
+        choice = QMessageBox.warning(
+            self,
+            "未保存的更改",
+            "当前规则有未保存的更改。是否保存？",
+            buttons,
+            QMessageBox.Cancel,
+        )
+        if choice == QMessageBox.Cancel:
+            return False
+        if choice == QMessageBox.Save:
+            self._on_save()
+        elif choice == QMessageBox.Discard:
+            if self._session is not None:
+                self._session.discard()
+        return True
+
+    def closeEvent(self, event) -> None:
+        """WP-11: intercept dialog close to warn on unsaved changes."""
+        if self._maybe_discard_changes():
+            self._save_session()  # WP-12/Issue B: persist before close
+            self._auto_save_timer.stop()
+            event.accept()
+        else:
+            event.ignore()
+
+    def _on_auto_save(self) -> None:
+        """WP-10: timer-based auto-save via the Commit boundary.
+
+        Skips validation — auto-save is crash safety, not correctness enforcement.
+        On failure, dirty state is preserved and WorkingCopy is intact.
+        """
+        if self._session is None or self._current_rule is None:
+            return
+        if not self._session.is_dirty():
+            return
+        # Sync accumulated name / description edits to WorkingCopy
+        self._current_rule.name = self._name_edit.text().strip() or self._current_rule.name
+        self._current_rule.description = self._desc_edit.toPlainText()
+        try:
+            self._session.auto_commit()
+            self._repo.save()
+            self._save_session()  # WP-12/Issue B: persist after auto-save
+        except Exception:
+            # Silently skip — WorkingCopy + dirty flag remain intact
+            pass
+
+    # ── Session Persistence Helpers (WP-12 / Issue B) ─────────────
+
+    def _save_session(self) -> None:
+        """Persist current EditSession state via SessionStore."""
+        if self._session is None or self._current_rule is None:
+            return
+        self._session_store.save(
+            self._current_rule.id,
+            self._session.to_serializable(),
+        )
+
+    def _restore_session(self, rule_id: str) -> EditSession | None:
+        """Restore a previously persisted session, or None."""
+        data = self._session_store.load(rule_id)
+        if data is None:
+            return None
+        return EditSession.restore_from(data)
+
     def _validate(self) -> list[str]:
-        errors: list[str] = []
+        """Delegate business validation to DomainValidator (WP-3).
+
+        UI retains presentation responsibility only — error display,
+        dialog formatting, and workflow control.
+        """
+        from dataclasses import replace as dc_replace
+        from editor.domain_validator import DomainValidator
+
         if self._current_rule is None:
-            return errors
+            return []
 
         name = self._name_edit.text().strip()
-        if not name:
-            errors.append("规则名称不能为空。")
+        rule = dc_replace(self._current_rule, name=name)
 
-        for r in self._repo.all_rules():
-            if r.id != self._current_rule.id and r.name == name:
-                errors.append(f"规则名称「{name}」已存在。")
-                break
-
-        for step in self._current_rule.steps:
-            if step.type == "replace" and not str(step.parameters.get("from", "")):
-                errors.append("Replace 步骤的 from 不能为空。")
-            if step.type == "regex_replace" and not str(step.parameters.get("pattern", "")):
-                errors.append("Regex Replace 步骤的 pattern 不能为空。")
-
-        return errors
+        issues = DomainValidator.validate_rule(
+            rule,
+            existing_rules=self._repo.all_rules(),
+        )
+        return [i.message for i in issues]
 
     def _on_save(self) -> None:
         if self._current_rule is None:
@@ -684,7 +840,12 @@ class RuleManagerDialog(QDialog):
 
         self._current_rule.name = self._name_edit.text().strip() or self._current_rule.name
         self._current_rule.description = self._desc_edit.toPlainText()
+
+        if self._session is not None:
+            self._session.commit()
+
         self._repo.save()
+        self._save_session()  # WP-12/Issue B: persist after manual save
 
         rule_id = self._current_rule.id  # 在 refresh 之前保存 id
         self._rule_list.blockSignals(True)

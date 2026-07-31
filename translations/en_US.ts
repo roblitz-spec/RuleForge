@@ -2,7 +2,7 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="en_US">
 <context>
-    <name>ResourceHub</name>
+    <name>RuleForge</name>
     <message><source>menu.tools</source><translation>Tools</translation></message>
     <message><source>menu.settings</source><translation>Settings...</translation></message>
     <message><source>menu.undo</source><translation>Undo Last Rename</translation></message>

@@ -1,12 +1,32 @@
-# ResourceHub — 开发参考
+# RuleForge — 开发参考
+
+> 治理文档：`docs/AI/CONSTITUTION.md`（宪法）、`docs/AI/ENGINEERING_BASELINE.md`（工程基线）、`docs/AI/MILESTONE_CHECKLIST.md`（里程碑检查清单）、`docs/AI/API_CONTRACT.md`（公共 API）、`docs/AI/ADR_INDEX.md`（ADR 索引）
 
 ## Git 基线
 
 | Tag | 内容 |
 |---|---|
+| `M2-complete` | EditSession, WorkingCopy, UI Integration |
+| `M3-complete` | Commit, Undo/Redo, Preview Isolation |
+| `M4-complete` | Auto Save, Unsaved Changes Warning, Session Persistence |
+| `M4.1-complete` | Architecture Alignment Patch |
+| `M5-complete` | Smart Previews & Analysis Warnings，356 tests |
+| `M6-complete` | Rule Duplication（复制规则），384 tests |
+| `M7-complete` | Architecture Consolidation（架构整合），398 tests |
+| `M8-complete` | Rule Presets（规则预设），447 tests |
+| `M9-complete` | RuleInference Engine，30 tests |
+| `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E, CLI, API Freeze, Constitution，164 tests |
+| `M11-A-complete` | Execution Pipeline，24 tests |
+| `M11-B-complete` | Rename Execution Engine，13 tests |
+| `M11-C-complete` | Dry Run & Inspection Engine，15 tests |
+| `M11-D-complete` | Engine Registry，23 tests |
+| `M11-E-complete` | Execution Observability，28 tests |
+| `M11-complete` | Execution Platform v1，103 tests，743 total——架构基线冻结 |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
+| `M15-complete` | AddSuffix Rule 完成，AI Memory 系统建立 |
+| `M16-complete` | AI Memory v2.0 Governance，Selection Features |
 
 ## RuleStep 类型总览
 
@@ -48,12 +68,64 @@
 - `padding = 0` → 不补零
 - RuleEngine 保持无状态，不存储计数器
 
+## RuleInference（M9）
+
+- `engine/rule_inference.py`：纯函数模块，从 (original, desired) 示例对推导 RuleStep
+- 算法：候选生成 → 交集 → 组合搜索（深度 3）
+- 检测能力：case（4 模式）、trim（3 模式）、replace/remove_text（SequenceMatcher 差分）、add_prefix/add_suffix、insert
+- 多步骤流水线：自动发现组合（如 trim → case、replace → case）
+
+## RuleSession Lifecycle（M10.5-B）
+
+- `models/session_state.py`：`SessionState` 显式状态模型，强制转移验证
+- 状态：`NEW → INFERRED → EDITING → VALIDATED → PREVIEW_READY → COMMITTED → EXECUTED`
+- 无效转移 → `InvalidStateTransition`（带描述信息）
+- 失败操作不推进状态；同状态转移为幂等（无操作）
+- `commit()` 自动调用 `validate()`，验证失败拒绝提交
+- `RuleLifecycle` 保留用于存储成熟度追踪（与 `SessionState` 分离）
+
+## RuleWorkflow（M10.5 + M10.5-C）
+
+- `engine/rule_workflow.py`：薄编排层，组合已有引擎能力
+- `infer()` → `open_session()` → `validate()` → `preview()` → `commit()` → `finalize()` → `execute()`
+- `run()` 完整流水线便捷方法
+- RuleWorkflow 不拥有状态 — RuleSession 是唯一权威可变对象
+- E2E 验证：14 tests 覆盖成功路径、失败路径、状态一致性、产物验证
+- CLI 集成：`cli/workflow_cli.py` 薄包装层，`run`/`infer`/`execute` 命令，18 tests
+- API Freeze：公共 API 契约冻结于 `docs/AI/API_CONTRACT.md`，ADR-012 记录兼容性策略
+- Execution Pipeline：M11-A 引入 `ExecutionContext` + `ExecutionEngine` + `ExecutionPipeline` + `ExecutionResult`，24 tests
+- Rename Execution Engine：M11-B `RenameExecutionEngine` + `FilesystemAdapter`，13 tests
+- Dry Run & Inspection Engine：M11-C `DryRunExecutionEngine` + `InspectionExecutionEngine`，15 tests
+- Engine Registry：M11-D `EngineRegistry` + `execute_named()`，23 tests
+- Execution Observability：M11-E `ExecutionTrace` + `ExecutionMetrics` + `ExecutionDiagnostics`，28 tests
+- Platform Freeze：M11-F `EXECUTION_PLATFORM.md` 最终架构基线，6 条冻结设计原则
+
 ## 架构原则
 
 - RuleEngine：纯函数，无状态，通过 `context` 参数传递索引
 - RenamePlanEngine：统一生成计划 + 冲突检测 + 合法性校验
 - RenameEngine：仅按 `plan.action` 执行，不重复决策
 - Preview ↔ Rename 共享同一份 RenamePlan
+- RuleInference：纯函数，无状态，组合搜索
+- RuleSession：唯一可变状态所有者，SessionState 强制转移
+- RuleWorkflow：无状态编排层，读取 SessionState 但不写入
+- ExecutionPipeline：执行协调层，验证 → 准备 → 执行 → 收集 → 清理，拥有 Trace
+- ExecutionEngine：抽象引擎接口（prepare/execute/cleanup），不操纵工作流状态
+- EngineRegistry：命名引擎注册与选择，解耦 RuleWorkflow 与具体引擎
+- 可观测性：ExecutionTrace（Pipeline 拥有）+ ExecutionMetrics（结构化指标）+ ExecutionDiagnostics
+
+## M11 冻结设计原则（Execution Platform v1）
+
+以下原则为架构约束，M12+ 不得违反：
+
+1. **Pipeline 执行，Registry 选择** — Pipeline 不解引 Engine；Registry 不执行
+2. **Engine 实现行为，不实现编排** — Engine 拥有执行语义，不控制工作流
+3. **规划与执行分离** — `build_rename_plan()` 验证和冲突检测；Engine 执行
+4. **可观测性属于执行生命周期** — Trace 由 Pipeline 创建和填充
+5. **ExecutionResult 是统一输出契约** — 所有 Engine 产生相同结果类型
+6. **新执行模式是 Engine，不是 Pipeline 分支** — 通过新 ExecutionEngine 扩展
+
+详见 `docs/AI/EXECUTION_PLATFORM.md`
 
 ## Context Contract
 
@@ -123,6 +195,39 @@ RuleEngine 与 PreviewEngine 之间通过 `context` 字典通信。
 - **稳定基线**：每个 Milestone 锁 Tag、锁行为
 - **功能冻结**：完成后不轻易改，只能 Bug Fix
 - **文档同步**：行为变更必须更新 AGENTS.md
+
+## Rule Presets（M8）
+
+### 预设数据模型
+
+- `Preset` dataclass：`id`（唯一标识）、`name`、`description`、`rules: list[Rule]`、`version=1`
+- `PresetStore`：JSON 持久化存储于 `~/.resourcehub/presets.json`
+- 提供完整 CRUD：`save` / `save_all` / `load_all` / `delete` / `rename`
+
+### 预设管理对话框
+
+- `PresetManagerDialog`（QDialog）：保存 / 加载 / 删除 / 重命名
+- 操作前通过 `EditSession` 脏状态守卫防止未保存修改丢失
+- `Repository.replace_rules()`：以原子方式替换全部 Rule 列表
+
+### 工具栏预设选择器
+
+- 主窗口工具栏 QComboBox：下拉显示全部已保存预设
+- 切换预设立即同步 `Repository` → 刷新规则下拉框 → 刷新预览
+- "管理预设"按钮打开 `PresetManagerDialog`
+
+### 启动恢复
+
+- `Settings.get_last_preset_id()` / `set_last_preset_id()`：基于 QSettings 持久化
+- 应用启动时自动恢复上次使用的预设（`_restore_last_preset()`）
+- 预设已删除或不存在 → 静默跳过
+
+### 架构约束
+
+- `Repository` 始终为唯一运行时真源
+- `PresetStore` 仅为持久化存储，不参与运行时状态
+- `Settings` 仅存储预设标识符（元数据），不存储规则数据
+- 加载预设通过 `Repository.replace_rules()`（公有 API）
 
 ## One Milestone, One Core Feature
 

@@ -1,4 +1,4 @@
-# ResourceHub — Test Strategy
+# RuleForge — Test Strategy
 
 ## Test Pyramid
 
@@ -21,7 +21,7 @@
 | **Preview==Rename** | preview_name → target_name → file on disk | ✅ Blocker |
 | **Undo Cycle** | Rename→Undo, Rename→Undo→Rename→Undo | ✅ Blocker |
 | **Boundary** | Unicode, emoji, long names, empty dirs, conflicts | ✅ Blocker |
-| **Regression** | Full pytest suite (152 tests) | ✅ Blocker |
+| **Regression** | Full pytest suite | ✅ Blocker |
 
 ## Why This Strategy
 

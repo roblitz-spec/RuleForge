@@ -21,10 +21,12 @@ class JsonStorage:
 
         rules: list[Rule] = []
         for item in data.get("rules", []):
-            steps = [
-                RuleStep(type=s["type"], parameters=s.get("parameters", {}))
-                for s in item.get("steps", [])
-            ]
+            steps: list[RuleStep] = []
+            for s in item.get("steps", []):
+                step = RuleStep(type=s["type"], parameters=s.get("parameters", {}))
+                if "id" in s:
+                    step.id = s["id"]  # 保留已有 UUID；缺失时保留 default_factory 生成值
+                steps.append(step)
             rules.append(Rule(
                 id=item["id"],
                 name=item["name"],
@@ -45,7 +47,7 @@ class JsonStorage:
                     "description": r.description,
                     "pinned": r.pinned,
                     "steps": [
-                        {"type": s.type, "parameters": s.parameters}
+                        {"id": s.id, "type": s.type, "parameters": s.parameters}
                         for s in r.steps
                     ],
                 }

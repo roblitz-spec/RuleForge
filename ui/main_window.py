@@ -40,8 +40,10 @@ from models.rule import Rule
 from storage.repository import RuleRepository
 from ui.file_table_model import FileTableModel, SortProxyModel
 from ui.operation_log_dialog import OperationLogDialog
+from ui.preset_manager_dialog import PresetManagerDialog
 from ui.rule_manager_dialog import RuleManagerDialog
 from ui.settings_dialog import SettingsDialog
+from storage.preset_store import PresetStore
 from workers.rename_worker import RenameWorker
 from workers.scan_worker import ScanWorker
 
@@ -53,7 +55,7 @@ def _utime() -> float:
 
 
 class MainWindow(QMainWindow):
-    """ResourceHub 主窗口。"""
+    """RuleForge 主窗口。"""
 
     def __init__(self) -> None:
         super().__init__()
@@ -64,6 +66,7 @@ class MainWindow(QMainWindow):
         self._settings = Settings()
         self._logger = OperationLogger()
         self._tr = Translator()
+        self._rule_dialog: "RuleManagerDialog | None" = None  # WP-9: preview isolation
 
         # 菜单栏
         self._setup_menu()
@@ -74,7 +77,12 @@ class MainWindow(QMainWindow):
         )
         self._repo.load()
 
-        self.setWindowTitle("ResourceHub v0.1")
+        # 预设存储
+        self._preset_store = PresetStore(
+            Path.home() / ".resourcehub" / "presets.json"
+        )
+
+        self.setWindowTitle("RuleForge v0.1")
         self.resize(1200, 700)
         self.setMinimumSize(1000, 600)
 
@@ -125,7 +133,25 @@ class MainWindow(QMainWindow):
         rule_layout.addWidget(self._rule_mgr_btn)
         main_layout.addLayout(rule_layout)
 
-        # ---------- 第三部分：文件列表 ----------
+        # ---------- 第三行：预设 ----------
+        preset_layout = QHBoxLayout()
+        preset_label = QLabel("预设：")
+        self._preset_combo = QComboBox()
+        self._preset_combo.currentIndexChanged.connect(self._on_preset_changed)
+        self._refresh_preset_combo()
+
+        self._preset_mgr_btn = QPushButton("管理预设")
+        self._preset_mgr_btn.clicked.connect(self._on_preset_manage)
+
+        preset_layout.addWidget(preset_label)
+        preset_layout.addWidget(self._preset_combo, stretch=1)
+        preset_layout.addWidget(self._preset_mgr_btn)
+        main_layout.addLayout(preset_layout)
+
+        # 启动时恢复上次使用的预设
+        self._restore_last_preset()
+
+        # ---------- 第四部分：文件列表 ----------
         self._file_model = FileTableModel()
         self._sort_proxy = SortProxyModel()
         self._sort_proxy.setSourceModel(self._file_model)
@@ -254,7 +280,13 @@ class MainWindow(QMainWindow):
         return self._repo.find(rule_id)
 
     def _refresh_preview(self) -> None:
-        rule = self._current_rule()
+        # WP-9: preview reads WorkingCopy when editing session is active
+        if self._rule_dialog is not None:
+            rule = self._rule_dialog.current_working_copy
+        else:
+            rule = None
+        if rule is None:
+            rule = self._current_rule()
         if rule is None or not self._items:
             return
         PreviewEngine.generate_preview(self._items, rule)
@@ -366,12 +398,12 @@ class MainWindow(QMainWindow):
         self._start_scan(self._current_dir)
 
     def _on_rule_manage(self) -> None:
-        dialog = RuleManagerDialog(
+        self._rule_dialog = RuleManagerDialog(
             self._repo,
             on_steps_changed=self._refresh_preview,
             parent=self,
         )
-        dialog.exec()
+        self._rule_dialog.exec()
         rule_id = self._rule_combo.currentData()
         self._rule_combo.blockSignals(True)
         self._rule_combo.clear()
@@ -384,6 +416,8 @@ class MainWindow(QMainWindow):
                     self._rule_combo.setCurrentIndex(i)
                     break
         self._rule_combo.blockSignals(False)
+        self._rule_dialog = None
+        self._refresh_preset_combo()
         self._refresh_preview()
 
     def _on_rule_changed(self, _index: int) -> None:
@@ -391,6 +425,87 @@ class MainWindow(QMainWindow):
         if isinstance(rule_id, str):
             self._settings.set_last_rule_id(rule_id)
         self._refresh_preview()
+
+    # ── Preset ────────────────────────────────────────────
+
+    def _restore_last_preset(self) -> None:
+        last_id = self._settings.get_last_preset_id()
+        if last_id is None:
+            return
+
+        presets = {p.id: p for p in self._preset_store.load_all()}
+        preset = presets.get(last_id)
+        if preset is None:
+            return  # preset no longer exists — silently skip
+
+        from copy import deepcopy
+        self._repo.replace_rules(deepcopy(preset.rules))
+        self._repo.save()
+
+        # 刷新下拉框，选中恢复的 preset
+        self._preset_combo.blockSignals(True)
+        for i in range(self._preset_combo.count()):
+            if self._preset_combo.itemData(i) == last_id:
+                self._preset_combo.setCurrentIndex(i)
+                break
+        self._preset_combo.blockSignals(False)
+
+        # 同步规则下拉框
+        self._refresh_rule_combo_from_repo()
+
+    def _refresh_preset_combo(self) -> None:
+        self._preset_combo.blockSignals(True)
+        self._preset_combo.clear()
+        self._preset_combo.addItem("（无活动预设）", None)
+        for p in self._preset_store.load_all():
+            self._preset_combo.addItem(p.name, p.id)
+        self._preset_combo.blockSignals(False)
+
+    def _on_preset_changed(self, _index: int) -> None:
+        preset_id = self._preset_combo.currentData()
+        if preset_id is None:
+            return
+
+        presets = {p.id: p for p in self._preset_store.load_all()}
+        preset = presets.get(preset_id)
+        if preset is None:
+            return
+
+        from copy import deepcopy
+        self._repo.replace_rules(deepcopy(preset.rules))
+        self._repo.save()
+
+        # persistera sista valda preset
+        self._settings.set_last_preset_id(preset_id)
+
+        # 刷新规则下拉框
+        self._rule_combo.blockSignals(True)
+        self._rule_combo.clear()
+        for r in self._repo.all_rules():
+            self._rule_combo.addItem(r.name, r.id)
+        self._rule_combo.blockSignals(False)
+
+        self._refresh_preview()
+
+    def _on_preset_manage(self) -> None:
+        dialog = PresetManagerDialog(
+            self._repo,
+            self._preset_store,
+            parent=self,
+        )
+        dialog.exec()
+        self._refresh_preset_combo()
+        self._refresh_rule_combo_from_repo()
+
+    def _refresh_rule_combo_from_repo(self) -> None:
+        self._rule_combo.blockSignals(True)
+        self._rule_combo.clear()
+        for r in self._repo.all_rules():
+            self._rule_combo.addItem(r.name, r.id)
+        self._rule_combo.blockSignals(False)
+        self._refresh_preview()
+
+    # ── Rename ────────────────────────────────────────────
 
     def _on_rename(self) -> None:
         if self._current_dir is None or not self._items:
