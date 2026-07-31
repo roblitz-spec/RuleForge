@@ -24,6 +24,7 @@
 | `M11-complete` | Execution Platform v1，103 tests，743 total——架构基线冻结 |
 | `M12-A-complete` | Batch Execution Foundation，27 tests |
 | `M12-B-complete` | Plugin / Extension Framework，46 tests |
+| `M12-C-complete` | First Official Plugin (RuleValidationPlugin)，36 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -151,6 +152,16 @@
 - 错误隔离：单个插件 `on_activate` 失败不影响其他插件
 - 扩展点定义为契约 — 实际 hook 调用在后续 Milestone 中连接
 - Rollback、Scheduler、Remote Provider 将作为 Plugin 实现，而非核心平台修改
+
+## First Official Plugin (M12-C)
+
+- `RuleValidationPlugin`：首个官方插件，`plugins/rule_validation_plugin.py`
+- Capability：`VALIDATION`
+- 检测：空步骤（warning）、未知类型（error）、缺失必需参数（error）、无效正则（error）、无效 case/trim mode（error）、非整数 number 参数（error）
+- `ValidationResult` / `ValidationIssue`：插件自有数据模型
+- 独立可调用 API：`plugin.validate(rule) → ValidationResult`
+- 全生命周期验证通过：register → enable → activate → deactivate → disable → unregister
+- Plugin Framework 无需任何修改即可支撑官方插件 —— 冻结契约完全满足需求
 
 ## Context Contract
 

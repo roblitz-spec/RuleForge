@@ -25,11 +25,31 @@ Batch Execution Foundation (M12-A) ← frozen: ExecutionBatch, BatchExecutor, Ba
         │
 Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Extension Points
         │
-        ├── M12-C Rollback (planned)
-        ├── M12-D Scheduler (planned)
-        ├── M12-E Remote Provider (planned)
+        ├── RuleValidationPlugin (M12-C) ← frozen: first official plugin
+        ├── M12-D Rollback (planned)
+        ├── M12-E Scheduler (planned)
+        ├── M12-F Remote Provider (planned)
         └── ... future extensions
 ```
+
+### Official Plugin Baseline (M12-C)
+
+`RuleValidationPlugin` is the first official plugin, proving that the
+M12-B Plugin Framework can support real-world extensions without any
+framework modification.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.validation` |
+| Capability | `VALIDATION` |
+| Tests | 36 |
+| Framework changes needed | **0** |
+
+All future official plugins MUST follow the same pattern:
+1. Implement `Plugin` contract (metadata + lifecycle hooks)
+2. Register through `PluginRegistry`
+3. Declare capabilities via `PluginCapability`
+4. Never bypass the plugin framework
 
 ```
 plugins/                          (new, parallel to engine/)
