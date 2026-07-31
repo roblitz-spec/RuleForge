@@ -1,5 +1,7 @@
 # RuleForge — 开发参考
 
+> 治理文档：`docs/AI/CONSTITUTION.md`（宪法）、`docs/AI/ENGINEERING_BASELINE.md`（工程基线）、`docs/AI/MILESTONE_CHECKLIST.md`（里程碑检查清单）、`docs/AI/API_CONTRACT.md`（公共 API）、`docs/AI/ADR_INDEX.md`（ADR 索引）
+
 ## Git 基线
 
 | Tag | 内容 |
@@ -13,7 +15,7 @@
 | `M7-complete` | Architecture Consolidation（架构整合），398 tests |
 | `M8-complete` | Rule Presets（规则预设），447 tests |
 | `M9-complete` | RuleInference Engine，30 tests |
-| `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E, CLI, API Freeze，164 tests |
+| `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E, CLI, API Freeze, Constitution，164 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
