@@ -13,7 +13,7 @@
 | `M7-complete` | Architecture Consolidation（架构整合），398 tests |
 | `M8-complete` | Rule Presets（规则预设），447 tests |
 | `M9-complete` | RuleInference Engine，30 tests |
-| `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E Validation，116 tests |
+| `M10-complete` | Rule Model, Session, Workflow, Lifecycle, E2E, CLI，134 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -83,6 +83,7 @@
 - `run()` 完整流水线便捷方法
 - RuleWorkflow 不拥有状态 — RuleSession 是唯一权威可变对象
 - E2E 验证：14 tests 覆盖成功路径、失败路径、状态一致性、产物验证
+- CLI 集成：`cli/workflow_cli.py` 薄包装层，`run`/`infer`/`execute` 命令，18 tests
 
 ## 架构原则
 
