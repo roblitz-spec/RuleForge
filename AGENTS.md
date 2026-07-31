@@ -26,6 +26,7 @@
 | `M12-B-complete` | Plugin / Extension Framework，46 tests |
 | `M12-C-complete` | First Official Plugin (RuleValidationPlugin)，36 tests |
 | `M12-D-complete` | First Capability Plugin (RollbackPlugin)，26 tests |
+| `M12-E-complete` | Scheduler Plugin (SchedulerPlugin)，30 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -174,6 +175,17 @@
 - `RollbackResult`：restored、failed、skipped 分类 + success_rate
 - Lifecycle vs Business State：`deactivate()` 保留历史，`unregister()` 清理资源
 - 26 tests，863 total
+
+## Scheduler Plugin (M12-E)
+
+- `SchedulerPlugin`：执行编排插件，`plugins/scheduler_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 API：`schedule_once(delay)` + `schedule_recurring(interval, max_runs)` + `cancel()` + `cancel_all()`
+- Trigger Model：once（单次延迟）、recurring unlimited（无限循环）、recurring max_runs=N（有限次）
+- 回调异常隔离：单个回调失败不影响其他任务调度
+- deactivate() 自动 cancel_all()，资源释放
+- Scheduler / Execution 职责分离：Scheduler 负责 timing policy，Execution Platform 负责执行
+- 30 tests，893 total
 
 ## Context Contract
 

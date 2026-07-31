@@ -27,7 +27,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         │
         ├── RuleValidationPlugin (M12-C) ← frozen: first official plugin
         ├── RollbackPlugin (M12-D) ← frozen: first capability plugin
-        ├── M12-E Scheduler (planned)
+        ├── SchedulerPlugin (M12-E) ← frozen: execution orchestration
         ├── M12-F Remote Provider (planned)
         └── ... future extensions
 ```
@@ -75,6 +75,37 @@ All future capability plugins MUST:
 4. Use official Capability Model
 5. Not bypass Plugin Framework
 6. Keep business state separate from lifecycle state
+
+### Execution Orchestration Baseline (M12-E)
+
+`SchedulerPlugin` is the first official execution orchestration plugin,
+demonstrating that the Plugin Framework supports timing-based capabilities
+without modifying the framework or the Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.scheduler` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Task scheduling (delayed + recurring) |
+| Tests | 30 |
+
+#### Scheduler / Execution Boundary
+
+The Scheduler and Execution Platform operate on separate concerns:
+
+| Concern | Scheduler Plugin | Execution Platform | Rollback Plugin |
+|---|---|---|---|
+| Trigger & timing | ✅ Responsible | — | — |
+| Scheduling policy | ✅ Responsible | — | — |
+| Execute tasks | ❌ Not responsible | ✅ Responsible | — |
+| Retry logic | ❌ Not responsible | — | — |
+| Runtime context | — | ✅ Responsible | — |
+| Result delivery | — | ✅ Responsible | — |
+| Rollback/recovery | — | — | ✅ Responsible |
+| Business logic | ❌ Not responsible | ❌ Not responsible | — |
+
+The Scheduler Plugin orchestrates *when* to execute — it delegates
+*what* to execute to the Execution Platform via callbacks.
 
 ```
 plugins/                          (new, parallel to engine/)
