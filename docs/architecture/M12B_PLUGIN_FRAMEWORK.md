@@ -1,14 +1,35 @@
 # M12-B: Plugin / Extension Framework
 
-**Status**: Implemented (pending freeze review)
+**Status**: Frozen (2026-07-31)
 **Parent Baselines**: M11 (Execution Platform v1), M12-A (Batch Execution Foundation)
-**Commit**: TBD
+**Commit**: `eb7faecb488e3ad990fb511a830ab4b12e29fdd4`
+**Tag**: `M12-B-complete`
 
 ## Architecture Overview
 
 RuleForge Plugin Framework provides a stable extension mechanism that allows
 new capabilities — Rollback, Scheduler, Remote Provider — to be added as
 plugins without modifying core platform code.
+
+This is the **official extension contract** for RuleForge.  All future
+extensions (Rollback, Scheduler, Remote Provider, and beyond) MUST be
+implemented as plugins using this framework — direct coupling to the
+Execution Platform is prohibited.
+
+### Platform Hierarchy
+
+```
+Execution Platform (M11)          ← frozen: ExecutionEngine, Pipeline, Context, Result
+        │
+Batch Execution Foundation (M12-A) ← frozen: ExecutionBatch, BatchExecutor, BatchResult
+        │
+Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Extension Points
+        │
+        ├── M12-C Rollback (planned)
+        ├── M12-D Scheduler (planned)
+        ├── M12-E Remote Provider (planned)
+        └── ... future extensions
+```
 
 ```
 plugins/                          (new, parallel to engine/)

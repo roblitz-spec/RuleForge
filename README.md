@@ -13,7 +13,8 @@
 |---|---|---|
 | M11 — Execution Platform v1 | ✅ Frozen | 统一执行架构，103 tests |
 | M12-A — Batch Execution Foundation | ✅ Frozen | 批量执行基础，27 tests |
-| M12-B+ | 🔄 Planned | 路线待定 |
+| M12-B — Plugin / Extension Framework | ✅ Frozen | 插件与扩展框架，46 tests |
+| M12-C | 🔄 Planned | Rollback（基于 Plugin Framework） |
 
 ## 执行平台
 
@@ -28,6 +29,18 @@ RuleForge 提供统一执行架构（Execution Platform v1），支持多种执�
 | `batch` | 批量执行 | 多规则批量协调执行 |
 
 详见 [`docs/AI/EXECUTION_PLATFORM.md`](docs/AI/EXECUTION_PLATFORM.md)。
+
+## 插件框架
+
+M12-B 建立了官方插件与扩展框架，所有未来扩展能力（Rollback、Scheduler、Remote Provider）必须作为 Plugin 实现，不得直接耦合执行平台。
+
+| 组件 | 说明 |
+|---|---|
+| `Plugin` | 抽象基类，7 个生命周期钩子 |
+| `PluginRegistry` | 统一注册、发现、启用/禁用、能力查询 |
+| `PluginCapability` | 6 个标准扩展点 |
+
+详见 [`docs/architecture/M12B_PLUGIN_FRAMEWORK.md`](docs/architecture/M12B_PLUGIN_FRAMEWORK.md)。
 
 ## 技术栈
 
