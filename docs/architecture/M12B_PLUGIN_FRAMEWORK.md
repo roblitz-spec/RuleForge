@@ -31,6 +31,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         ├── RemoteProviderPlugin (M12-F) ← frozen: remote provider hub
         ├── WorkflowPlugin (M12-G) ← frozen: workflow orchestration
         ├── EventPlugin (M12-H) ← frozen: event-driven pub/sub
+        ├── PolicyPlugin (M12-I) ← frozen: policy evaluation
         └── ... future extensions
 ```
 
@@ -442,3 +443,38 @@ When a specific plugin capability is needed (e.g., Rollback as an
 
 This wiring is deferred to the milestone that implements the concrete
 plugin (M12-C Rollback, M12-D Scheduler, etc.).
+
+### Policy Capability Baseline (M12-I)
+
+`PolicyPlugin` is the first official policy evaluation plugin,
+demonstrating that the Plugin Framework can manage allow/deny/warn
+decision-making without modifying the framework or Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.policy` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Policy definition, registration, evaluation (allow/deny/warn) |
+| Tests | 43 |
+| Reference Policies | `max-files`, `allow-text-only` |
+
+**Important:** Policy Plugin v1 is a decision-support tool, NOT a
+security authorization engine.  The "default allow" behavior (empty
+policy raises no error) applies ONLY to this Policy Capability
+Baseline.  Future security-oriented policy capabilities must NOT
+inherit the default-allow behavior without explicit design review.
+
+#### Policy / Execution / Orchestration Boundary
+
+| Concern | PolicyPlugin | EventPlugin | WorkflowPlugin | SchedulerPlugin | RemoteProviderPlugin | Execution Platform | RollbackPlugin |
+|---|---|---|---|---|---|---|---|
+| Policy definition | ✅ Responsible | — | — | — | — | — | — |
+| Policy evaluation | ✅ Responsible | — | — | — | — | — | — |
+| allow/deny/warn | ✅ Responsible | — | — | — | — | — | — |
+| Event pub/sub | — | ✅ Responsible | — | — | — | — | — |
+| Workflow orchestration | — | — | ✅ Responsible | — | — | — | — |
+| Trigger \& timing | — | — | — | ✅ Responsible | — | — | — |
+| Provider selection | — | — | — | — | ✅ Responsible | — | — |
+| Execute tasks | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ✅ Responsible | — |
+| Rollback/recovery | — | — | — | — | — | — | ✅ Responsible |
+| Business logic | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | — |

@@ -30,6 +30,7 @@
 | `M12-F-complete` | Remote Provider Plugin (RemoteProviderPlugin)，32 tests |
 | `M12-G-complete` | Workflow Plugin (WorkflowPlugin)，40 tests |
 | `M12-H-complete` | Event Plugin (EventPlugin)，38 tests |
+| `M12-I-complete` | Policy Plugin (PolicyPlugin)，43 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -224,6 +225,18 @@
 - `EventResult`：subscriber_count, delivered, failed, all_delivered
 - 内置 Reference Events：`execution.started`, `execution.completed`, `execution.failed`
 - 38 tests，1003 total
+
+## Policy Plugin (M12-I)
+
+- `PolicyPlugin`：策略决策插件，`plugins/policy_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 Model：`Policy`（name, description, evaluate callable）+ `EvaluationResult`（decision, reason, is_allowed/is_denied/is_warning）
+- 核心 API：`register(policy)` + `unregister(name)` + `list_policies()` + `get(name)` + `evaluate(name, context)` + `evaluate_all(context)` + `has_deny(context)`
+- 三种决策语义：allow（允许）、deny（拒绝）、warn（警告）
+- 便利构造器：`evaluation_allow()`, `evaluation_deny()`, `evaluation_warn()`
+- 重要：v1 为决策辅助工具，不作为 RBAC/ABAC/Authorization Engine
+- Reference Policies：`max-files`（文件数限制）、`allow-text-only`（扩展名检查）
+- 43 tests，1046 total
 
 ## Context Contract
 
