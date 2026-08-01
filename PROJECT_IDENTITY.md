@@ -90,7 +90,7 @@ For the execution lifecycle: [`docs/architecture/execution-lifecycle.md`](docs/a
 | [docs/architecture/capability-handbook.md](docs/architecture/capability-handbook.md) | Capability API reference — all 8 plugins |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributor guide — decision tree, template, rules |
 | [CHANGELOG.md](CHANGELOG.md) | Milestone history (M2–M12) |
-| [docs/governance/](docs/governance/) | Governance history (not normative) |
+| [docs/governance/](docs/governance/) | Governance history, AI Working Agreement, Architecture Change Checklist |
 | [docs/ideas/ideas.md](docs/ideas/ideas.md) | Deferred capability candidates |
 
 ## 6. Maintenance Policy
@@ -106,8 +106,12 @@ Work exceeding these bounds requires a new Major Milestone (M13+),
 planned and approved through formal governance.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the Capability Acceptance Rules.
+See [`docs/governance/ARCHITECTURE_CHANGE_CHECKLIST.md`](docs/governance/ARCHITECTURE_CHANGE_CHECKLIST.md) for the architecture change decision checklist.
 
 ## 7. AI Collaboration
+
+All AI agents collaborating on this repository must follow
+[`docs/governance/AI_WORKING_AGREEMENT.md`](docs/governance/AI_WORKING_AGREEMENT.md).
 
 ### OpenHands (implementation agent)
 
@@ -135,6 +139,7 @@ If returning after months away, read in this order:
 3. [docs/architecture/overview.md](docs/architecture/overview.md) — architecture
 4. [docs/architecture/adr/README.md](docs/architecture/adr/README.md) — key decisions
 5. [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute
+6. [docs/governance/AI_WORKING_AGREEMENT.md](docs/governance/AI_WORKING_AGREEMENT.md) — AI collaboration rules
 
 Do NOT start with historical milestone documents — the architecture
 baseline supersedes them.
