@@ -28,6 +28,7 @@
 | `M12-D-complete` | First Capability Plugin (RollbackPlugin)，26 tests |
 | `M12-E-complete` | Scheduler Plugin (SchedulerPlugin)，30 tests |
 | `M12-F-complete` | Remote Provider Plugin (RemoteProviderPlugin)，32 tests |
+| `M12-G-complete` | Workflow Plugin (WorkflowPlugin)，40 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -198,6 +199,18 @@
 - `select(name)`：可用性检查，不可用时抛出 `RuntimeError`
 - Provider / Execution / Orchestration 职责分离：Provider Plugin 管理注册发现，Execution Platform 执行
 - 32 tests，925 total
+
+## Workflow Plugin (M12-G)
+
+- `WorkflowPlugin`：工作流编排插件，`plugins/workflow_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 Model：`WorkflowStep`（name, action, config, on_failure）+ `Workflow`（name, description, steps）
+- 核心 API：`register(wf)` + `unregister(name)` + `list_workflows()` + `get(name)` + `execute(name, handlers, context)`
+- Failure Policy：`on_failure="stop"`（默认，终止后续 Step）、`"continue"`（继续下一 Step）
+- 结果模型：`StepResult`（per-step）+ `WorkflowResult`（success_rate, all_ok, last_error）
+- `execute()` 通过 handlers dict 映射 action → callback，不承担业务逻辑
+- Reference Workflow：3-step validate → process → notify
+- 40 tests，965 total
 
 ## Context Contract
 

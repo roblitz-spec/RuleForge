@@ -18,7 +18,8 @@
 | M12-D — First Capability Plugin | ✅ Frozen | RollbackPlugin，26 tests |
 | M12-E — Scheduler Plugin | ✅ Frozen | SchedulerPlugin，30 tests |
 | M12-F — Remote Provider Plugin | ✅ Frozen | RemoteProviderPlugin，32 tests |
-| M12-G | 🔄 Planned | |
+| M12-G — Workflow Plugin | ✅ Frozen | WorkflowPlugin，40 tests |
+| M12-H | 🔄 Planned | |
 
 ## 执行平台
 
@@ -47,6 +48,7 @@ M12-B 建立了官方插件与扩展框架，所有未来扩展能力必须作�
 | `RollbackPlugin` | 首个能力插件 — LIFO 重命名回滚 |
 | `SchedulerPlugin` | 执行编排插件 — 延迟/循环任务调度 |
 | `RemoteProviderPlugin` | 远程提供者插件 — Provider 注册/发现/选择 |
+| `WorkflowPlugin` | 工作流编排插件 — 多步骤流程定义与执行 |
 
 详见 [`docs/architecture/M12B_PLUGIN_FRAMEWORK.md`](docs/architecture/M12B_PLUGIN_FRAMEWORK.md)。
 

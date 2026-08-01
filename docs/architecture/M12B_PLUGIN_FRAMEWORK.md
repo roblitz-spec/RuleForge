@@ -29,6 +29,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         ├── RollbackPlugin (M12-D) ← frozen: first capability plugin
         ├── SchedulerPlugin (M12-E) ← frozen: execution orchestration
         ├── RemoteProviderPlugin (M12-F) ← frozen: remote provider hub
+        ├── WorkflowPlugin (M12-G) ← frozen: workflow orchestration
         └── ... future extensions
 ```
 
@@ -134,6 +135,34 @@ without modifying the framework or Execution Platform.
 | Retry logic | ❌ Not responsible | ❌ Not responsible | — | — |
 | Rollback/recovery | — | — | — | ✅ Responsible |
 | Business logic | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | — |
+
+### Workflow Orchestration Baseline (M12-G)
+
+`WorkflowPlugin` is the first official workflow orchestration plugin,
+demonstrating that the Plugin Framework can manage multi-step sequenced
+execution flows without modifying the framework or Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.workflow` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Workflow registration, discovery, sequenced execution |
+| Tests | 40 |
+| Reference Workflow | 3-step pipeline (validate → process → notify) |
+
+#### Workflow / Execution / Orchestration Boundary
+
+| Concern | WorkflowPlugin | SchedulerPlugin | RemoteProviderPlugin | Execution Platform | RollbackPlugin |
+|---|---|---|---|---|---|
+| Workflow definition | ✅ Responsible | — | — | — | — |
+| Step orchestration | ✅ Responsible | — | — | — | — |
+| Flow coordination | ✅ Responsible | — | — | — | — |
+| Failure policy | ✅ Responsible | — | — | — | — |
+| Trigger & timing | — | ✅ Responsible | — | — | — |
+| Provider selection | — | — | ✅ Responsible | — | — |
+| Execute tasks | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ✅ Responsible | — |
+| Rollback/recovery | — | — | — | — | ✅ Responsible |
+| Business logic | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | — |
 
 ```
 plugins/                          (new, parallel to engine/)
