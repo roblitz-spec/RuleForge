@@ -31,6 +31,7 @@
 | `M12-G-complete` | Workflow Plugin (WorkflowPlugin)，40 tests |
 | `M12-H-complete` | Event Plugin (EventPlugin)，38 tests |
 | `M12-I-complete` | Policy Plugin (PolicyPlugin)，43 tests |
+| `M12-J-complete` | Validation Plugin (ValidationPlugin)，44 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -237,6 +238,17 @@
 - 重要：v1 为决策辅助工具，不作为 RBAC/ABAC/Authorization Engine
 - Reference Policies：`max-files`（文件数限制）、`allow-text-only`（扩展名检查）
 - 43 tests，1046 total
+
+## Validation Plugin (M12-J)
+
+- `ValidationPlugin`：数据校验插件，`plugins/validation_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 Model：`ValidationRule`（name, description, validate callable）+ `ValidationResult`（status pass/fail, message, is_valid）
+- 核心 API：`register(rule)` + `unregister(name)` + `list_rules()` + `get(name)` + `validate(name, context)` + `validate_all(context)` + `has_failures(context)`
+- Validate 回调支持 bool（True=pass）、str（空=pass）、任意类型（fail+message）
+- 重要：v1 仅校验数据，不自动修复、不策略决策、不执行业务逻辑
+- Reference Rules：`non-empty-name`（非空名称校验）、`positive-count`（正数校验）
+- 44 tests，1090 total
 
 ## Context Contract
 

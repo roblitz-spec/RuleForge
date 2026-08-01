@@ -32,6 +32,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         ├── WorkflowPlugin (M12-G) ← frozen: workflow orchestration
         ├── EventPlugin (M12-H) ← frozen: event-driven pub/sub
         ├── PolicyPlugin (M12-I) ← frozen: policy evaluation
+        ├── ValidationPlugin (M12-J) ← frozen: data validation
         └── ... future extensions
 ```
 
@@ -478,3 +479,39 @@ inherit the default-allow behavior without explicit design review.
 | Execute tasks | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ✅ Responsible | — |
 | Rollback/recovery | — | — | — | — | — | — | ✅ Responsible |
 | Business logic | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | — |
+
+### Validation Capability Baseline (M12-J)
+
+`ValidationPlugin` is the first official data validation plugin,
+demonstrating that the Plugin Framework can manage pass/fail
+validation checks without modifying the framework or Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.validation` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Data validation — define, register, execute validation rules |
+| Tests | 44 |
+| Reference Rules | `non-empty-name`, `positive-count` |
+
+**Important:** Validation Plugin v1 validates data — it does NOT auto-repair,
+make policy decisions, or execute business logic. Unknown return types
+from validation callbacks are treated as failure (fail-safe). Future
+schema engines, constraint solvers, or auto-repair must be separate
+capabilities.
+
+#### Validation / Execution / Orchestration Boundary
+
+| Concern | ValidationPlugin | PolicyPlugin | EventPlugin | WorkflowPlugin | SchedulerPlugin | RemoteProviderPlugin | Execution Platform | RollbackPlugin |
+|---|---|---|---|---|---|---|---|---|
+| Validation rules | ✅ Responsible | — | — | — | — | — | — | — |
+| Pass/fail checks | ✅ Responsible | — | — | — | — | — | — | — |
+| allow/deny/warn | — | ✅ Responsible | — | — | — | — | — | — |
+| Event pub/sub | — | — | ✅ Responsible | — | — | — | — | — |
+| Workflow orchestration | — | — | — | ✅ Responsible | — | — | — | — |
+| Trigger \& timing | — | — | — | — | ✅ Responsible | — | — | — |
+| Provider selection | — | — | — | — | — | ✅ Responsible | — | — |
+| Execute tasks | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Responsible | — |
+| Rollback/recovery | — | — | — | — | — | — | — | ✅ Responsible |
+| Auto repair | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | — |
+| Business logic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | — |
