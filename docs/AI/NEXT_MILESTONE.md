@@ -1,5 +1,9 @@
 # RuleForge — Next Milestone Planning
 
+> ⚠️ **Historical** — This document reflects pre-M12 planning state.
+> M12 is now complete and frozen. For current status, see
+> [README.md](../../README.md) and [docs/architecture/overview.md](../architecture/overview.md).
+
 ## Product Direction
 
 RuleForge is an AI-assisted Rule IDE. Core value: Example → Rule Inference → Rule → Test/Preview → Execute → Reuse. File renaming is the initial adapter — not the product identity.

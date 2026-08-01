@@ -1,5 +1,9 @@
 # RuleForge — Current Status
 
+> ⚠️ **Historical** — This document reflects the project state at approximately M10 Phase 2.
+> It is preserved for historical reference. For current status, see
+> [README.md](../../README.md) and [docs/architecture/overview.md](../architecture/overview.md).
+
 > RuleForge originated from ResourceHub, a batch renaming tool. It is now an AI-assisted Rule IDE.
 
 **Branch**: `m10-phase3a-rule-analysis`

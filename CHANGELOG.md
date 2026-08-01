@@ -1,5 +1,30 @@
 # Changelog
 
+## M12 — Capability Plugin Platform
+
+**Architecture baseline expansion.** RuleForge adds a Plugin Framework and
+9 official capability plugins, covering the full execution lifecycle.
+
+| Phase | Feature | Tests |
+|-------|---------|-------|
+| M12-A | BatchExecutionEngine + BatchExecutor | 27 |
+| M12-B | Plugin Framework (Plugin ABC, Registry, Lifecycle) | 46 |
+| M12-C | RuleValidationPlugin — first official plugin | 36 |
+| M12-D | RollbackPlugin — recovery & compensation | 26 |
+| M12-E | SchedulerPlugin — trigger & timing | 30 |
+| M12-F | RemoteProviderPlugin — provider selection | 32 |
+| M12-G | WorkflowPlugin — step orchestration | 40 |
+| M12-H | EventPlugin — pub/sub events | 38 |
+| M12-I | PolicyPlugin — allow/deny/warn | 43 |
+| M12-J | ValidationPlugin — pass/fail checks | 44 |
+| M12-K | NotificationPlugin — channel delivery | 44 |
+
+**Capability plugins**: 9 (all frozen)
+**Architecture Decision Records**: 6 (Plugin First, Frozen Contract, Capability Model, Zero Cross-Plugin Dependency, Acceptance Rules, Best-Effort Notification)
+**Architecture principles**: 8
+**Total tests (M1–M12-K)**: 1134
+**Status**: Maintenance Mode — Architecture Baseline Frozen
+
 ## M11 — Execution Platform v1
 
 **Architecture baseline.** RuleForge evolves from a rule processing tool into

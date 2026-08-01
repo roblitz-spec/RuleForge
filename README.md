@@ -7,6 +7,18 @@
 **Development Branch**: [`m11-execution-platform`](https://github.com/roblitz-spec/RuleForge/tree/m11-execution-platform)  
 **CI**: [![Test](https://github.com/roblitz-spec/RuleForge/actions/workflows/test.yml/badge.svg)](https://github.com/roblitz-spec/RuleForge/actions/workflows/test.yml)
 
+## Project Status
+
+**Maintenance Mode** — Architecture Baseline Frozen (M12)
+
+| Allowed | Not Allowed |
+|---|---|
+| Bug fixes | New capability plugins |
+| Documentation improvements | Framework refactoring |
+| CI / dependency maintenance | Engine refactoring |
+
+Future development requires a new Major Milestone (M13+). See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## 当前状态
 
 | 里程碑 | 状态 | 说明 |
