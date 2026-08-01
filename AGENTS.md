@@ -32,6 +32,7 @@
 | `M12-H-complete` | Event Plugin (EventPlugin)，38 tests |
 | `M12-I-complete` | Policy Plugin (PolicyPlugin)，43 tests |
 | `M12-J-complete` | Validation Plugin (ValidationPlugin)，44 tests |
+| `M12-K-complete` | Notification Plugin (NotificationPlugin)，44 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -249,6 +250,19 @@
 - 重要：v1 仅校验数据，不自动修复、不策略决策、不执行业务逻辑
 - Reference Rules：`non-empty-name`（非空名称校验）、`positive-count`（正数校验）
 - 44 tests，1090 total
+
+## Notification Plugin (M12-K)
+
+- `NotificationPlugin`：通知投递插件，`plugins/notification_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 Model：`Notification`（subject, body, metadata, timestamp）+ `NotificationChannel`（name, description, deliver callable）+ `DeliveryResult`（channel_name, delivered, message）
+- 核心 API：`register(channel)` + `unregister(name)` + `list_channels()` + `get(name)` + `notify(name, notification)` + `notify_all(notification)`
+- v1：best-effort、synchronous、lightweight
+- 不提供：retry、queue、persistence、guaranteed delivery、async runtime
+- `notify_all()` Channel Exception Isolation：单 Channel 异常不影响其它 Channel
+- 便利构造器：`delivery_ok()`, `delivery_failed()`
+- Reference Channels：`console`（stdout）、`collector`（内存收集）
+- 44 tests，1134 total
 
 ## Context Contract
 

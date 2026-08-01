@@ -33,6 +33,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         ├── EventPlugin (M12-H) ← frozen: event-driven pub/sub
         ├── PolicyPlugin (M12-I) ← frozen: policy evaluation
         ├── ValidationPlugin (M12-J) ← frozen: data validation
+        ├── NotificationPlugin (M12-K) ← frozen: notification delivery
         └── ... future extensions
 ```
 
@@ -515,3 +516,37 @@ capabilities.
 | Rollback/recovery | — | — | — | — | — | — | — | ✅ Responsible |
 | Auto repair | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | — |
 | Business logic | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | — |
+
+### Notification Capability Baseline (M12-K)
+
+`NotificationPlugin` is the first official notification delivery plugin,
+demonstrating that the Plugin Framework can manage channel-based
+notification dispatch without modifying the framework or Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.notification` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Channel registration, notification delivery, broadcast |
+| Tests | 44 |
+| Reference Channels | `console` (stdout), `collector` (in-memory) |
+
+**Important:** Notification Plugin v1 provides best-effort synchronous
+notification delivery only.  It does NOT provide retry, queueing,
+persistence, guaranteed delivery, or async execution.  Each channel
+delivery is independent — one channel failing (including raising) in
+`notify_all()` does not block delivery to other channels.
+
+#### Notification / Execution / Orchestration Boundary
+
+| Concern | NotificationPlugin | EventPlugin | PolicyPlugin | ValidationPlugin | WorkflowPlugin | Execution Platform |
+|---|---|---|---|---|---|---|
+| Channel management | ✅ Responsible | — | — | — | — | — |
+| Notification dispatch | ✅ Responsible | — | — | — | — | — |
+| Event pub/sub | — | ✅ Responsible | — | — | — | — |
+| Policy decisions | — | — | ✅ Responsible | — | — | — |
+| Data validation | — | — | — | ✅ Responsible | — | — |
+| Workflow orchestration | — | — | — | — | ✅ Responsible | — |
+| Execute tasks | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Responsible |
+| Retry / Queue / Persist | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Async runtime | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |

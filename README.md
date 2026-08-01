@@ -22,7 +22,8 @@
 | M12-H — Event Plugin | ✅ Frozen | EventPlugin，38 tests |
 | M12-I — Policy Plugin | ✅ Frozen | PolicyPlugin，43 tests |
 | M12-J — Validation Plugin | ✅ Frozen | ValidationPlugin，44 tests |
-| M12-K | 🔄 Planned | |
+| M12-K — Notification Plugin | ✅ Frozen | NotificationPlugin，44 tests |
+| M12-L | 🔄 Planned | |
 
 ## 执行平台
 
@@ -55,6 +56,7 @@ M12-B 建立了官方插件与扩展框架，所有未来扩展能力必须作�
 | `EventPlugin` | 事件驱动插件 — Pub/Sub 事件定义与分发 |
 | `PolicyPlugin` | 策略插件 — Allow/Deny/Warn 策略评估 |
 | `ValidationPlugin` | 校验插件 — 基于规则的数据校验 |
+| `NotificationPlugin` | 通知插件 — Channel 注册与消息投递 |
 
 详见 [`docs/architecture/M12B_PLUGIN_FRAMEWORK.md`](docs/architecture/M12B_PLUGIN_FRAMEWORK.md)。
 
