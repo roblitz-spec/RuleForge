@@ -20,11 +20,16 @@ transformation domain.
 
 | Field | Value |
 |---|---|
-| Current Milestone | M12 (closed) |
+| Current Milestone | M12.1 (closed) |
+| Milestone Status | **Closed** |
 | Project Status | **Maintenance Mode** |
-| Architecture Status | **Baseline Frozen** |
-| Development Policy | **Maintenance First** |
+| Architecture Status | **Stable — Baseline Frozen** |
+| Development Policy | **Maintenance Only** |
 | Primary Branch | `m11-execution-platform` |
+
+**Next Stage**: Maintenance Only.  Future capabilities (Rule IDE,
+Workspace, GUI Rewrite, RenamePlan Migration, Workflow Designer)
+require a new Major Milestone (M13+).
 
 See [README.md](README.md) for usage and quick start.
 See [CHANGELOG.md](CHANGELOG.md) for milestone history.
@@ -79,14 +84,55 @@ Composition ── capabilities compose at the caller level
 For the full architecture: [`docs/architecture/overview.md`](docs/architecture/overview.md).
 For the execution lifecycle: [`docs/architecture/execution-lifecycle.md`](docs/architecture/execution-lifecycle.md).
 
+### 4.1 Current Runtime Architecture
+
+| Layer | Component | File | Status |
+|---|---|---|---|
+| **GUI** | `MainWindow` (Legacy UI) | `ui/main_window.py` | Stable |
+| **Planning** | `RenamePlanEngine` (SSOT) | `engine/rename_plan_engine.py` | Stable |
+| **Integration** | `ExecutionIntegrationService` | `ui/execution_integration.py` | Stable |
+| **Execution** | `ExecutionPipeline` | `engine/execution_pipeline.py` | Frozen (M11) |
+| **Rollback** | `RollbackPlugin` | `plugins/rollback_plugin.py` | Frozen (M12-D) |
+
+**Architecture Status**: Stable.  **Baseline**: Frozen (M12).
+
+Execution flow: `MainWindow` → `RenamePlanEngine` (planning) →
+`ExecutionWorker` / `ExecutionIntegrationService` (integration) →
+`ExecutionPipeline` → `RenameExecutionEngine` (execution) →
+`RollbackPlugin` (rollback).
+
+See [`docs/architecture/runtime_architecture.md`](docs/architecture/runtime_architecture.md)
+for the full runtime flow documentation.
+
+### 4.2 Scope Summary — M12 Execution Integration
+
+**Included:**
+
+- Execution Integration (`ExecutionIntegrationService` + `ExecutionWorker`)
+- Rollback Integration (`RollbackPlugin` replacing `UndoEngine`)
+- Execution Trace Integration (`ExecutionTrace` + `ExecutionMetrics`)
+
+**Excluded:**
+
+- Rule IDE
+- Workspace
+- GUI Rewrite
+- RenamePlan Migration (replacing `RenamePlanEngine` with new API)
+- Workflow Designer
+
+Excluded items require a new Major Milestone (M13+), not incremental
+extension of M12.
+
 ## 5. Canonical Documentation
 
 | Document | Purpose |
 |---|---|
 | [README.md](README.md) | Project entry point — what, status, quick start |
 | [docs/architecture/overview.md](docs/architecture/overview.md) | Architecture — layers, design principles |
+| [docs/architecture/runtime_architecture.md](docs/architecture/runtime_architecture.md) | Runtime architecture — GUI→Integration→Execution→Rollback flow |
 | [docs/architecture/principles.md](docs/architecture/principles.md) | 8 binding architecture principles |
 | [docs/architecture/adr/README.md](docs/architecture/adr/README.md) | Architecture Decision Records — why decisions were made |
+| [docs/architecture/adr/007-execution-integration.md](docs/architecture/adr/007-execution-integration.md) | ADR-007: Execution Integration (M12 Maintenance) |
 | [docs/architecture/capability-handbook.md](docs/architecture/capability-handbook.md) | Capability API reference — all 8 plugins |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contributor guide — decision tree, template, rules |
 | [CHANGELOG.md](CHANGELOG.md) | Milestone history (M2–M12) |
@@ -137,9 +183,10 @@ If returning after months away, read in this order:
 1. **PROJECT_IDENTITY.md** ← you are here
 2. [README.md](README.md) — project status and quick start
 3. [docs/architecture/overview.md](docs/architecture/overview.md) — architecture
-4. [docs/architecture/adr/README.md](docs/architecture/adr/README.md) — key decisions
-5. [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute
-6. [docs/governance/AI_WORKING_AGREEMENT.md](docs/governance/AI_WORKING_AGREEMENT.md) — AI collaboration rules
+4. [docs/architecture/runtime_architecture.md](docs/architecture/runtime_architecture.md) — runtime execution flow
+5. [docs/architecture/adr/README.md](docs/architecture/adr/README.md) — key decisions
+6. [CONTRIBUTING.md](CONTRIBUTING.md) — how to contribute
+7. [docs/governance/AI_WORKING_AGREEMENT.md](docs/governance/AI_WORKING_AGREEMENT.md) — AI collaboration rules
 
 Do NOT start with historical milestone documents — the architecture
 baseline supersedes them.

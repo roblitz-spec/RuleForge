@@ -12,6 +12,7 @@ _M12 Baseline — Frozen_
 | [ADR-004](adr/004-zero-cross-plugin-dependency.md) | Zero Cross-Plugin Dependency | Accepted |
 | [ADR-005](adr/005-capability-acceptance-rules.md) | Capability Acceptance Rules | Accepted |
 | [ADR-006](adr/006-best-effort-notification.md) | Best-Effort Notification Delivery | Accepted |
+| [ADR-007](adr/007-execution-integration.md) | Execution Integration (M12 Maintenance) | Accepted |
 
 ## What is an ADR?
 

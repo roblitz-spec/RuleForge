@@ -31,7 +31,7 @@ from config.settings import Settings
 from engine.operation_logger import OperationLogger
 from engine.preview_engine import PreviewEngine
 from engine.rename_plan_engine import RenamePlanEngine
-from engine.undo_engine import UndoEngine
+from ui.execution_integration import ExecutionIntegrationService
 from i18n.translator import Translator
 from models.enums import ItemType
 from models.file_item import FileItem
@@ -44,7 +44,7 @@ from ui.preset_manager_dialog import PresetManagerDialog
 from ui.rule_manager_dialog import RuleManagerDialog
 from ui.settings_dialog import SettingsDialog
 from storage.preset_store import PresetStore
-from workers.rename_worker import RenameWorker
+from workers.execution_worker import ExecutionWorker
 from workers.scan_worker import ScanWorker
 
 _DEBUG = os.environ.get("RESOURCEHUB_DEBUG", "") == "1"
@@ -62,9 +62,10 @@ class MainWindow(QMainWindow):
         self._current_dir: Path | None = None
         self._items: list[FileItem] = []
         self._scan_worker: ScanWorker | None = None
-        self._rename_worker: RenameWorker | None = None
+        self._execution_worker: ExecutionWorker | None = None
         self._settings = Settings()
         self._logger = OperationLogger()
+        self._integration = ExecutionIntegrationService()
         self._tr = Translator()
         self._rule_dialog: "RuleManagerDialog | None" = None  # WP-9: preview isolation
 
@@ -243,13 +244,15 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def _on_undo(self) -> None:
-        if not self._logger.records():
+        if not self._integration.can_rollback:
             QMessageBox.information(self, "提示", self._tr.translate("msg.no_undo"))
             return
 
-        results = UndoEngine.undo(self._logger)
-        success = sum(1 for r in results if r.success)
-        failed = len(results) - success
+        rb_result = self._integration.rollback()
+        self._logger.clear()
+
+        success = len(rb_result.restored)
+        failed = len(rb_result.failed)
         QMessageBox.information(
             self, self._tr.translate("msg.undo_done"),
             f"成功：{success}\n失败：{failed}",
@@ -374,11 +377,11 @@ class MainWindow(QMainWindow):
             QTimer.singleShot(0, _on_paint_done)
 
     def closeEvent(self, event: object) -> None:
-        for w in (self._scan_worker, self._rename_worker):
+        for w in (self._scan_worker, self._execution_worker):
             if w is not None:
                 w.wait(5000)
         self._scan_worker = None
-        self._rename_worker = None
+        self._execution_worker = None
         super().closeEvent(event)
 
     # ---------- 按钮行为 ----------
@@ -574,13 +577,20 @@ class MainWindow(QMainWindow):
         progress.setWindowModality(Qt.WindowModal)
         progress.show()
 
-        self._rename_worker = RenameWorker(plans, logger=self._logger)
-        self._rename_worker.progress_changed.connect(progress.setValue, Qt.QueuedConnection)
-        self._rename_worker.finished_with_result.connect(
+        rule = self._current_rule()
+        if rule is None:
+            QMessageBox.information(self, "提示", "请先选择规则。")
+            return
+
+        self._execution_worker = ExecutionWorker(
+            plans, rule, self._integration, logger=self._logger,
+        )
+        self._execution_worker.progress_changed.connect(progress.setValue, Qt.QueuedConnection)
+        self._execution_worker.finished_with_result.connect(
             lambda results: self._on_rename_finished(results, plans, progress),
             Qt.QueuedConnection,
         )
-        self._rename_worker.start()
+        self._execution_worker.start()
 
     def _on_rename_finished(
         self, _results: list, plans: list, progress: QProgressDialog,
@@ -609,10 +619,10 @@ class MainWindow(QMainWindow):
         if success + overwritten > 0:
             self._undo_action.setEnabled(True)
 
-        if self._rename_worker is not None:
-            self._rename_worker.wait()
-            self._rename_worker.deleteLater()
-            self._rename_worker = None
+        if self._execution_worker is not None:
+            self._execution_worker.wait()
+            self._execution_worker.deleteLater()
+            self._execution_worker = None
 
         # 重扫目录以获取最新文件状态
         if self._current_dir is not None:

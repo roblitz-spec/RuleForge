@@ -1,7 +1,7 @@
 # RuleForge — Architecture Decision Index
 
-> **Last updated**: M10.5-F
-> **Total ADRs**: 10
+> **Last updated**: M12
+> **Total ADRs**: 11
 
 ## Index
 
@@ -19,6 +19,7 @@
 | ADR-010 | Adopt RuleForge as Official Project Identity | Accepted | M10 | Name change only |
 | ADR-011 | RuleSession Lifecycle | Accepted | M10.5-B | Backward compatible |
 | ADR-012 | Public API Freeze & Compatibility Baseline | Accepted | M10.5-E | Backward compatible |
+| ADR-013 | Execution Integration (M12 Maintenance) | Accepted | M12 | None (integration only) |
 
 ## Status Definitions
 

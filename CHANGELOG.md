@@ -1,5 +1,23 @@
 # Changelog
 
+## M12.1 — Execution Integration & Governance Closure
+
+**Documentation & governance closure.**  M12 Execution Platform connected to
+GUI via ExecutionIntegrationService.  Architecture baseline, decision record,
+normative contract, and maintenance inventory established.
+
+| Deliverable | Description |
+|---|---|
+| Execution Integration | `ExecutionIntegrationService` + `ExecutionWorker` |
+| Rollback Migration | `UndoEngine` → `RollbackPlugin` |
+| Trace Integration | `ExecutionTrace` + `ExecutionMetrics` per run |
+| ADR-007 | Execution Integration decision record |
+| Runtime Contract | Normative integration contract |
+| Maintenance Inventory | Legacy catalog, dependency audit, known limitations |
+
+**New tests**: 9.  **New docs**: 7.
+**Status**: CLOSED — Architecture Stable, Baseline Frozen.
+
 ## M12 — Capability Plugin Platform
 
 **Architecture baseline expansion.** RuleForge adds a Plugin Framework and

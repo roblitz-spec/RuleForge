@@ -94,3 +94,47 @@ python main.py
 - [治理决议](docs/governance/Governance_Resolution_v1.0.md) — PAC-1 Review Findings & Proposed Statements
 - [路线图](docs/planning/Roadmap_Refresh.md) — 已完成里程碑、待规划特性
 - [PAC-1 发现](docs/PAC/) — 13 份证据发现报告 + 收敛审查
+
+## Current Runtime Architecture
+
+| Layer | Component | Status |
+|---|---|---|
+| **GUI** | Legacy UI (`ui/main_window.py`) | Stable |
+| **Planning** | `RenamePlanEngine` (SSOT) | Stable |
+| **Integration** | `ExecutionIntegrationService` (Thin Layer) | Stable |
+| **Execution** | `ExecutionPipeline` (Primary Runtime) | Frozen (M11) |
+| **Rollback** | `RollbackPlugin` (Unified Rollback) | Frozen (M12-D) |
+
+Execution flow: `GUI` → `RenamePlanEngine` (planning) →
+`ExecutionIntegrationService` → `ExecutionPipeline` →
+`RenameExecutionEngine` → `RollbackPlugin`.
+
+See [`docs/architecture/runtime_architecture.md`](docs/architecture/runtime_architecture.md)
+and [`docs/contracts/execution_integration.md`](docs/contracts/execution_integration.md).
+
+## Documentation Map
+
+### Architecture
+
+| Document | Purpose |
+|---|---|
+| [Runtime Architecture](docs/architecture/runtime_architecture.md) | Runtime execution flow |
+| [Runtime Contract](docs/contracts/execution_integration.md) | Normative integration contract |
+| [ADR-007](docs/architecture/adr/007-execution-integration.md) | Execution Integration decision record |
+
+### Maintenance
+
+| Document | Purpose |
+|---|---|
+| [Legacy Inventory](docs/maintenance/legacy_inventory.md) | Module status catalog |
+| [Dependency Audit](docs/maintenance/dependency_audit.md) | Legacy module dependencies |
+| [Known Limitations](docs/maintenance/known_limitations.md) | M12 scope limitations |
+| [Maintenance Summary](docs/maintenance/maintenance_summary.md) | Maintenance landscape overview |
+
+### Project
+
+| Document | Purpose |
+|---|---|
+| [PROJECT_IDENTITY](PROJECT_IDENTITY.md) | Canonical project context |
+| [Release Notes](docs/releases/M12.1.md) | M12.1 release notes |
+| [Closing Report](docs/releases/M12_CLOSING_REPORT.md) | M12 Integration Closure report |

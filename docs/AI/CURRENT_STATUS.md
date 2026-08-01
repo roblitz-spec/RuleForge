@@ -1,137 +1,38 @@
-# RuleForge — Current Status
+# RuleForge — Development Status
 
-> ⚠️ **Historical** — This document reflects the project state at approximately M10 Phase 2.
-> It is preserved for historical reference. For current status, see
+> ⚠️ **Superseded** — This document reflects the project state at M11.2.
+> M12 Architecture Baseline has superseded it. For current status, see
 > [README.md](../../README.md) and [docs/architecture/overview.md](../architecture/overview.md).
 
-> RuleForge originated from ResourceHub, a batch renaming tool. It is now an AI-assisted Rule IDE.
-
+**Date**: 2026-07
 **Branch**: `m10-phase3a-rule-analysis`
-**Date**: 2026-07-30
-**Active Baseline**: M10 Phase 2 (RuleSession)
 
-## Test Status
+## Current Version
 
-| Metric | Value |
-|---|---|
-| Automated Tests | **480 PASS** (M8: 447 + M9: +30 + regression) |
-| Regression Matrix | **PASS** |
-| Unit + Integration | PASS |
-| Preview==Rename E2E | PASS |
-| Undo Cycle | PASS |
-| Boundary (Unicode/Long/Conflict) | PASS |
-| Multi-Select (File+Dir+Mixed) | PASS |
+M11.2 — UX Improvement & Stability Fixes
 
-## Blocker
+## Completed
 
-**None.**
-
-## Project Status
-
-| Item | Status |
-|---|---|
-| Architecture | Stable |
-| Rule Presets (M8) | Stable |
-| Rule Duplication (M6) | Stable |
-| ID Generation Consolidation (M7 WP-19) | Stable |
-| EditSession Interaction Coverage (M7 WP-20) | Stable |
-| Rule Editing Pipeline | Stable |
-| Rule Dependency Analysis | Stable |
-| Auto Save & Session Persistence | Stable |
-| Undo / Redo | Stable |
-
-## Current Focus
-
-**M9 RuleInference Engine — Complete ✅**
-
-Completed:
-- `engine/rule_inference.py`: Pure-function Example → Rule Inference (195 lines)
-- `tests/test_rule_inference.py`: 30 tests (case, trim, replace, prefix, suffix, multi-step, edge cases)
-- Combinatorial search: permissive candidate generation → consensus intersection → recursive search (depth 3)
-
-Next: M10 Rule IDE — rule editing, inspection, testing, preview, persistence.
-
-## Recent Reviews
-
-| Review | Scope | Status | Risk | Issues |
-|---|---|---|---|---|
-| WP-22 Review | Preset data model + store, 22 tests | ACCEPTED | LOW | 0 |
-| WP-23 Review | PresetManagerDialog + workflow, 9 tests | ACCEPTED | LOW | 0 |
-| WP-24 Review | Toolbar selector, 10 tests | ACCEPTED | LOW | 0 |
-| WP-25 Review | Startup restoration, 8 tests | ACCEPTED | LOW | 0 |
-| M6 Independent | `repository.py`, `ui/rule_manager_dialog.py`, `tests/test_rule_editor.py` | APPROVED | LOW | 6 observations (all non-blocking) |
-| WP-19 Review | ID consolidation, 3 files | ACCEPTED | LOW | 0 |
-| WP-20 Review | EditSession tests, 10 tests | ACCEPTED | LOW | 0 |
-
----
-
-## Deferred Technical Debt
-
-- **TD-003 — RuleManagerDialog God Class (694 行)**
-  - Status: Deferred
-  - Evidence: Project Health Review (2026-07-24)
-  - Reason: 6 responsibilities in one class; no functional defect. Refactor when Rule IDE introduces new step types.
-  - Trigger: New RuleStep type requires UI changes, or M12 Rule IDE begins.
-
-- **TD-007 — MainWindow 接近 God Class (550 行)**
-  - Status: Deferred
-  - Evidence: Project Health Review (2026-07-24)
-  - Reason: 4+ responsibilities; currently maintainable. Split when adding new top-level features.
-  - Trigger: Adding a new major UI feature (e.g., preview panel, batch operation queue).
-
-- **TD-008 — Number Rule 硬编码分隔符**
-  - Status: Deferred
-  - Evidence: Project Health Review (2026-07-24)
-  - Reason: `_handle_number()` suffix mode uses hardcoded `_`; Date Rule already has configurable `separator`. Backward-compatible fix.
-  - Trigger: User requests customizable Number separator, or Rule parameter audit.
-
-- **TD-009 — 调试代码残留在生产文件**
-  - Status: Deferred
-  - Evidence: Project Health Review (2026-07-24)
-  - Reason: `_record_role()` / `dump_role_stats()` in `ui/file_table_model.py:126-131`. No UI trigger; production dead code.
-  - Trigger: Next file_table_model.py maintenance pass.
-
-- **TD-011 — FileItem 命名歧义**
-  - Status: Deferred
-  - Evidence: Project Health Review (2026-07-24)
-  - Reason: `FileItem` holds both files and directories. Onboarding confusion risk. Requires global rename.
-  - Trigger: Major version bump or architecture refresh.
-
-- **TD-013 — README.md 信息不足 (16 行)**
-  - Status: Deferred
-  - Evidence: Project Health Review (2026-07-24)
-  - Reason: Missing feature list, Rule type table, usage guide. Not blocking development.
-  - Trigger: Preparing for public release or GitHub promotion.
-
-- **TD-018 — Validation Rule Drift**
-  - Status: Deferred
-  - Evidence: M11.3 Review #1
-  - Reason: `Validator.validate()` reimplements checks inline rather than calling `check_legality()`. Current behavior is correct.
-  - Trigger: Validation rules change, Rule IDE introduces new validation, or M13 validation refactor begins.
-
----
-
-## Feature Freeze
-
-The following modules are frozen. Changes require explicit approval:
-
-| Module | Reason | When Unfrozen |
+| Milestone | Description | Tests |
 |---|---|---|
-| `engine/rule_engine.py` | 10 Rule types stable, pure-function contract | Major version bump |
-| `engine/rename_engine.py` | Plan-based execution stable | Architecture change |
-| `engine/preview_engine.py` | Context contract frozen | New context field needed |
-| `engine/rename_plan_engine.py` | Conflict detection stable | New conflict type |
-| `ui/file_table_model.py` | `dataChanged` refresh stable | Performance regression |
+| M10 Phase 3A | RuleAnalysis (uses_index / uses_metadata) | 164 |
+| M11.1 | Multiple Selection + Scanner multi-path | 176 |
+| M11.2 | Sortable table, context menu, pin rules, regex assistant | 179 |
+| M11.2.4 | No-op rename source==target guard | 183 |
+| M11.2.8 | Windows Path case-insensitive string comparison | 185 |
+| M11.2.12 | Windows case-only rename conflict (samefile) | 188 |
+| M11.2.15 | Rescan after rename | 188 |
+| NAS Perf | Remove Path.resolve(), 511x SMB speedup | 188 |
 
-## Git Tags
+> For architecture stability status and frozen modules, see `docs/AI/CURRENT_STATUS.md`.
 
-| Tag | Content |
-|---|---|
-| `M6-complete` | Rule Duplication, 384 tests |
-| `M7-complete` | Architecture Consolidation, 398 tests |
-| `M8-complete` | Rule Presets, 447 tests |
-| `M12-complete` | Number Rule |
-| `M13-complete` | Insert Rule |
-| `M14-complete` | Date Rule |
-| `M15-complete` | AddSuffix Rule |
-| `M16-complete` | AI Memory v2.0 Governance |
+## Pending
+
+- Remove temporary debug logging
+- Final commit and push
+- M12 planning
+
+## Known Risks
+
+- Debug logging in engine/ files should be removed before release
+- Windows case-only rename needs real Windows verification
