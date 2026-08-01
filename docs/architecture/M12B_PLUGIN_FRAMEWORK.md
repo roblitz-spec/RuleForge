@@ -30,6 +30,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         ├── SchedulerPlugin (M12-E) ← frozen: execution orchestration
         ├── RemoteProviderPlugin (M12-F) ← frozen: remote provider hub
         ├── WorkflowPlugin (M12-G) ← frozen: workflow orchestration
+        ├── EventPlugin (M12-H) ← frozen: event-driven pub/sub
         └── ... future extensions
 ```
 
@@ -163,6 +164,36 @@ execution flows without modifying the framework or Execution Platform.
 | Execute tasks | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ✅ Responsible | — |
 | Rollback/recovery | — | — | — | — | ✅ Responsible |
 | Business logic | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | — |
+
+### Event-Driven Baseline (M12-H)
+
+`EventPlugin` is the first official event-driven plugin,
+demonstrating that the Plugin Framework can manage publish/subscribe
+semantics without modifying the framework or Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.event` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Event pub/sub — define, subscribe, publish, dispatch |
+| Tests | 38 |
+| Reference Events | `execution.started`, `execution.completed`, `execution.failed` |
+
+#### Event / Execution / Orchestration Boundary
+
+| Concern | EventPlugin | WorkflowPlugin | SchedulerPlugin | RemoteProviderPlugin | Execution Platform | RollbackPlugin |
+|---|---|---|---|---|---|---|
+| Event definition | ✅ Responsible | — | — | — | — | — |
+| Subscribe/Unsubscribe | ✅ Responsible | — | — | — | — | — |
+| Publish/Dispatch | ✅ Responsible | — | — | — | — | — |
+| Subscriber registry | ✅ Responsible | — | — | — | — | — |
+| Workflow definition | — | ✅ Responsible | — | — | — | — |
+| Step orchestration | — | ✅ Responsible | — | — | — | — |
+| Trigger & timing | — | — | ✅ Responsible | — | — | — |
+| Provider selection | — | — | — | ✅ Responsible | — | — |
+| Execute tasks | ❌ | ❌ | ❌ | ❌ | ✅ Responsible | — |
+| Rollback/recovery | — | — | — | — | — | ✅ Responsible |
+| Business logic | ❌ | ❌ | ❌ | ❌ | ❌ | — |
 
 ```
 plugins/                          (new, parallel to engine/)

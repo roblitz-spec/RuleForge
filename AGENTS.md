@@ -29,6 +29,7 @@
 | `M12-E-complete` | Scheduler Plugin (SchedulerPlugin)，30 tests |
 | `M12-F-complete` | Remote Provider Plugin (RemoteProviderPlugin)，32 tests |
 | `M12-G-complete` | Workflow Plugin (WorkflowPlugin)，40 tests |
+| `M12-H-complete` | Event Plugin (EventPlugin)，38 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -211,6 +212,18 @@
 - `execute()` 通过 handlers dict 映射 action → callback，不承担业务逻辑
 - Reference Workflow：3-step validate → process → notify
 - 40 tests，965 total
+
+## Event Plugin (M12-H)
+
+- `EventPlugin`：事件驱动插件，`plugins/event_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- 核心 Model：`Event`（name, data, timestamp, event_id）
+- 核心 API：`subscribe(name, callback)` + `unsubscribe(name, id)` + `publish(name, data) → EventResult`
+- Dispatch 隔离：Subscriber 回调异常不影响其他 Subscriber
+- 按注册顺序同步分发给所有 Subscriber
+- `EventResult`：subscriber_count, delivered, failed, all_delivered
+- 内置 Reference Events：`execution.started`, `execution.completed`, `execution.failed`
+- 38 tests，1003 total
 
 ## Context Contract
 

@@ -19,7 +19,8 @@
 | M12-E — Scheduler Plugin | ✅ Frozen | SchedulerPlugin，30 tests |
 | M12-F — Remote Provider Plugin | ✅ Frozen | RemoteProviderPlugin，32 tests |
 | M12-G — Workflow Plugin | ✅ Frozen | WorkflowPlugin，40 tests |
-| M12-H | 🔄 Planned | |
+| M12-H — Event Plugin | ✅ Frozen | EventPlugin，38 tests |
+| M12-I | 🔄 Planned | |
 
 ## 执行平台
 
@@ -49,6 +50,7 @@ M12-B 建立了官方插件与扩展框架，所有未来扩展能力必须作�
 | `SchedulerPlugin` | 执行编排插件 — 延迟/循环任务调度 |
 | `RemoteProviderPlugin` | 远程提供者插件 — Provider 注册/发现/选择 |
 | `WorkflowPlugin` | 工作流编排插件 — 多步骤流程定义与执行 |
+| `EventPlugin` | 事件驱动插件 — Pub/Sub 事件定义与分发 |
 
 详见 [`docs/architecture/M12B_PLUGIN_FRAMEWORK.md`](docs/architecture/M12B_PLUGIN_FRAMEWORK.md)。
 
