@@ -7,6 +7,8 @@
 **Development Branch**: [`m11-execution-platform`](https://github.com/roblitz-spec/RuleForge/tree/m11-execution-platform)  
 **CI**: [![Test](https://github.com/roblitz-spec/RuleForge/actions/workflows/test.yml/badge.svg)](https://github.com/roblitz-spec/RuleForge/actions/workflows/test.yml)
 
+> 📋 **New to the project?** Start with [`PROJECT_IDENTITY.md`](PROJECT_IDENTITY.md) — the canonical project context.
+
 ## Project Status
 
 **Maintenance Mode** — Architecture Baseline Frozen (M12)

@@ -2,6 +2,8 @@
 
 Thanks for your interest in contributing!
 
+> 📋 Read [`PROJECT_IDENTITY.md`](PROJECT_IDENTITY.md) first — it defines the project principles, architecture, and maintenance policy.
+
 ## Getting Started
 
 ```bash

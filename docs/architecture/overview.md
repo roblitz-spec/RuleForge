@@ -2,6 +2,8 @@
 
 _M12 Baseline — Frozen_
 
+> 📋 See [`PROJECT_IDENTITY.md`](../../PROJECT_IDENTITY.md) for the canonical project context and principles.
+
 ## Platform Layers
 
 ```
