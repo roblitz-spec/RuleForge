@@ -28,7 +28,7 @@ Plugin / Extension Framework (M12-B) ← frozen: Plugin, Registry, Lifecycle, Ex
         ├── RuleValidationPlugin (M12-C) ← frozen: first official plugin
         ├── RollbackPlugin (M12-D) ← frozen: first capability plugin
         ├── SchedulerPlugin (M12-E) ← frozen: execution orchestration
-        ├── M12-F Remote Provider (planned)
+        ├── RemoteProviderPlugin (M12-F) ← frozen: remote provider hub
         └── ... future extensions
 ```
 
@@ -106,6 +106,34 @@ The Scheduler and Execution Platform operate on separate concerns:
 
 The Scheduler Plugin orchestrates *when* to execute — it delegates
 *what* to execute to the Execution Platform via callbacks.
+
+### Remote Execution Baseline (M12-F)
+
+`RemoteProviderPlugin` is the first official remote execution plugin,
+demonstrating that the Plugin Framework can manage provider abstractions
+without modifying the framework or Execution Platform.
+
+| Attribute | Value |
+|---|---|
+| Name | `ruleforge.remote-provider` |
+| Capability | `EXECUTION_HOOK` |
+| Business Domain | Provider registration, discovery, selection |
+| Tests | 32 |
+| Reference Provider | `LocalProvider` (always available) |
+
+#### Provider / Execution / Orchestration Boundary
+
+| Concern | RemoteProviderPlugin | SchedulerPlugin | Execution Platform | RollbackPlugin |
+|---|---|---|---|---|
+| Provider registration | ✅ Responsible | — | — | — |
+| Provider discovery | ✅ Responsible | — | — | — |
+| Provider selection | ✅ Responsible | — | — | — |
+| Remote invocation abstraction | ✅ Responsible | — | — | — |
+| Trigger & timing | — | ✅ Responsible | — | — |
+| Execute tasks | ❌ Not responsible | ❌ Not responsible | ✅ Responsible | — |
+| Retry logic | ❌ Not responsible | ❌ Not responsible | — | — |
+| Rollback/recovery | — | — | — | ✅ Responsible |
+| Business logic | ❌ Not responsible | ❌ Not responsible | ❌ Not responsible | — |
 
 ```
 plugins/                          (new, parallel to engine/)

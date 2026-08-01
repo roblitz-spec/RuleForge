@@ -27,6 +27,7 @@
 | `M12-C-complete` | First Official Plugin (RuleValidationPlugin)，36 tests |
 | `M12-D-complete` | First Capability Plugin (RollbackPlugin)，26 tests |
 | `M12-E-complete` | Scheduler Plugin (SchedulerPlugin)，30 tests |
+| `M12-F-complete` | Remote Provider Plugin (RemoteProviderPlugin)，32 tests |
 | `M12-complete` | Number Rule 完成，122 tests |
 | `M13-complete` | Insert Rule 完成，131 tests |
 | `M14-complete` | Date Rule 完成，144 tests |
@@ -186,6 +187,17 @@
 - deactivate() 自动 cancel_all()，资源释放
 - Scheduler / Execution 职责分离：Scheduler 负责 timing policy，Execution Platform 负责执行
 - 30 tests，893 total
+
+## Remote Provider Plugin (M12-F)
+
+- `RemoteProviderPlugin`：远程提供者管理插件，`plugins/remote_provider_plugin.py`
+- Capability：`EXECUTION_HOOK`
+- `RemoteProvider` ABC：`name` + `execute(request) → dict` + `is_available()`
+- 核心 API：`register_provider()` + `unregister_provider()` + `list_providers()` + `get_provider()` + `select()`
+- `LocalProvider`：参考实现，始终可用
+- `select(name)`：可用性检查，不可用时抛出 `RuntimeError`
+- Provider / Execution / Orchestration 职责分离：Provider Plugin 管理注册发现，Execution Platform 执行
+- 32 tests，925 total
 
 ## Context Contract
 
