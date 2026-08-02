@@ -4,12 +4,12 @@ import sys
 
 from PySide6.QtWidgets import QApplication
 
-from ui.main_window import MainWindow
+from ui.workspace_window import WorkspaceWindow
 
 
 def main() -> None:
     app = QApplication(sys.argv)
-    window = MainWindow()
+    window = WorkspaceWindow()
     window.show()
     sys.exit(app.exec())
 

@@ -420,8 +420,10 @@ class MainWindow(QMainWindow):
                     break
         self._rule_combo.blockSignals(False)
         self._rule_dialog = None
-        self._refresh_preset_combo()
-        self._refresh_preview()
+
+    def open_rule_manager(self) -> None:
+        """Open the Rule Manager dialog.  Public API for Workspace integration."""
+        self._on_rule_manage()
 
     def _on_rule_changed(self, _index: int) -> None:
         rule_id = self._rule_combo.currentData()
